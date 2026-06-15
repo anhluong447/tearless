@@ -150,13 +150,17 @@ class ZombieDieState extends ZombieState:
 				pts = 30
 			zombie.player.add_score(pts)
 			
+		var visuals: Node3D = zombie.get_node_or_null("Visuals") as Node3D
+		if zombie.zombie_type == zombie.ZombieType.BOMBER and (visuals == null or not visuals.visible):
+			# Already detonating, do not run die sequence
+			return
+			
 		# Play death splat
 		if zombie.hurt_sound:
 			zombie.hurt_sound.pitch_scale = 0.7
 			zombie.hurt_sound.play()
 			
 		# Squash and sink death visual
-		var visuals: Node3D = zombie.get_node_or_null("Visuals") as Node3D
 		if visuals:
 			var tween: Tween = zombie.create_tween()
 			tween.set_parallel(true)
