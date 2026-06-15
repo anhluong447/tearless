@@ -166,3 +166,22 @@ func spawn_drop() -> void:
 			var p_type = randi() % 2
 			pickup.set("pickup_type", p_type)
 			get_parent().add_child(pickup)
+
+func try_step_up() -> void:
+	if not is_on_wall():
+		return
+	var horiz_vel = Vector3(velocity.x, 0, velocity.z)
+	if horiz_vel.length_squared() < 0.01:
+		return
+		
+	var step_height = 0.35
+	var forward_motion = horiz_vel.normalized() * 0.15
+	
+	# Test if we can move up and forward
+	var up_transform = global_transform
+	up_transform.origin += Vector3(0, step_height, 0)
+	
+	if not test_move(up_transform, forward_motion):
+		global_position.y += step_height
+		global_position += forward_motion
+

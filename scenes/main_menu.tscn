@@ -1,0 +1,165 @@
+[gd_scene load_steps=4 format=3 uid="uid://mainmenu123"]
+
+[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.04, 0.05, 0.08, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.1, 0.15, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.7, 1, 0.8)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 10
+
+[node name="MainMenu" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+script = ExtResource("1_script")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(400, 350)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="MainPanel" type="VBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Title" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/MainPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.8, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.2, 0.4, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 42
+text = "TEARLESS"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/MainPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.7, 0.8, 1)
+theme_override_font_sizes/font_size = 14
+text = "A Tactical FPS Survival Experience"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/PanelContainer/MarginContainer/MainPanel"]
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/MainPanel"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Start Game"
+
+[node name="SettingsButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/MainPanel"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Settings"
+
+[node name="ExitButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/MainPanel"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Exit Game"
+
+[node name="SettingsPanel" type="VBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="SettingsTitle" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel"]
+layout_mode = 2
+
+[node name="SensContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel/SensContainer"]
+layout_mode = 2
+text = "Mouse Sensitivity"
+
+[node name="SensSlider" type="HSlider" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel/SensContainer"]
+layout_mode = 2
+min_value = 0.05
+max_value = 1.0
+step = 0.05
+value = 0.3
+
+[node name="ValueLabel" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel/SensContainer"]
+layout_mode = 2
+text = "0.30"
+horizontal_alignment = 2
+
+[node name="VolContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel/VolContainer"]
+layout_mode = 2
+text = "Master Volume"
+
+[node name="VolSlider" type="HSlider" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel/VolContainer"]
+layout_mode = 2
+max_value = 1.0
+step = 0.05
+value = 0.5
+
+[node name="ValueLabel" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel/VolContainer"]
+layout_mode = 2
+text = "50%"
+horizontal_alignment = 2
+
+[node name="FullscreenContainer" type="HBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel/FullscreenContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fullscreen Mode"
+
+[node name="FullscreenCheckbox" type="CheckButton" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel/FullscreenContainer"]
+layout_mode = 2
+
+[node name="Spacer" type="Control" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/SettingsPanel"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "Back to Menu"
+
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/MainPanel/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/MainPanel/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/MainPanel/ExitButton" to="." method="_on_exit_button_pressed"]
+[connection signal="pressed" from="CenterContainer/PanelContainer/MarginContainer/SettingsPanel/BackButton" to="." method="_on_back_button_pressed"]

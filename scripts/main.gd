@@ -9,6 +9,7 @@ var quest_phase: int = 1 # 1: Wave survival, 2: Battery quest, 3: Extraction cou
 var batteries_collected: int = 0
 var extraction_timer: float = 30.0
 var bgm_player: AudioStreamPlayer = null
+var quest_spawn_timer: float = 0.0
 
 func _ready() -> void:
 	# Find player
@@ -32,6 +33,15 @@ func _ready() -> void:
 		nav_region.bake_navigation_mesh()
 
 func _process(delta: float) -> void:
+	if quest_phase == 2:
+		quest_spawn_timer += delta
+		if quest_spawn_timer >= 6.0:
+			quest_spawn_timer = 0.0
+			var alive = get_tree().get_nodes_in_group("zombie").size()
+			if alive < 5:
+				if spawner and spawner.has_method("spawn_zombie"):
+					spawner.call("spawn_zombie")
+					
 	if quest_phase == 3:
 		extraction_timer -= delta
 		var sec = ceili(extraction_timer)

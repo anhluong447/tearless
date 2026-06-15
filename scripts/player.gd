@@ -1,5 +1,8 @@
 extends CharacterBody3D
 
+const GameSettings = preload("res://scripts/settings.gd")
+
+
 const SPEED: float = 5.0
 const JUMP_VELOCITY: float = 4.5
 
@@ -46,11 +49,12 @@ var speed_multiplier: float = 1.0
 var damage_multiplier: float = 1.0
 
 # UI nodes
-@onready var health_label: Label = $HUD/MarginContainer/VBoxContainer/HealthLabel
-@onready var ammo_label: Label = $HUD/MarginContainer/VBoxContainer/AmmoLabel
-@onready var score_label: Label = $HUD/MarginContainer/VBoxContainer/ScoreLabel
-@onready var wave_label: Label = $HUD/MarginContainer/VBoxContainer/WaveLabel
-@onready var wave_alert: Label = $HUD/WaveAlert
+@onready var health_label: Label = $HUD/Layout/BottomHUD/HealthPanel/Margin/VBox/HealthLabel
+@onready var health_bar: ProgressBar = $HUD/Layout/BottomHUD/HealthPanel/Margin/VBox/HealthBar
+@onready var ammo_label: Label = $HUD/Layout/BottomHUD/AmmoPanel/Margin/AmmoLabel
+@onready var score_label: Label = $HUD/Layout/TopHUD/ScorePanel/Margin/ScoreLabel
+@onready var wave_label: Label = $HUD/Layout/TopHUD/WavePanel/Margin/WaveLabel
+@onready var wave_alert: Label = $HUD/Layout/WaveAlert
 @onready var game_over_screen: CenterContainer = $HUD/GameOverScreen
 @onready var crosshair: Control = $HUD/Crosshair
 
@@ -66,6 +70,17 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	game_over_screen.hide()
 	setup_weapons()
+	
+	# Apply mouse sensitivity from GameSettings
+	sensitivity = GameSettings.mouse_sensitivity * 0.01
+
+	# Connect Game Over screen buttons
+	var restart_btn = $HUD/GameOverScreen/PanelContainer/Margin/VBox/RestartButton as Button
+	var menu_btn = $HUD/GameOverScreen/PanelContainer/Margin/VBox/MenuButton as Button
+	if restart_btn:
+		restart_btn.pressed.connect(restart_game)
+	if menu_btn:
+		menu_btn.pressed.connect(_on_menu_button_pressed)
 
 func setup_inputs() -> void:
 	var actions: Dictionary = {
@@ -146,8 +161,6 @@ func _physics_process(delta: float) -> void:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 	if health <= 0:
-		if Input.is_action_just_pressed("shoot"):
-			restart_game()
 		return
 
 	# Handle ADS (Aim Down Sights)
@@ -389,16 +402,19 @@ func add_score(amount: int) -> void:
 func update_hud() -> void:
 	if health_label:
 		health_label.text = "HP: %d" % health
+	if health_bar:
+		health_bar.max_value = max_health
+		health_bar.value = health
 	if ammo_label:
 		if current_weapon:
 			var clip: int = weapon_clip_ammo.get(current_weapon.name, 0)
 			var reserve: int = ammo_reserves.get(current_weapon.name, 0)
 			if is_reloading:
-				ammo_label.text = "WEAPON: %s\nAMMO: Reloading..." % current_weapon.name
+				ammo_label.text = "%s - Reloading..." % current_weapon.name
 			else:
-				ammo_label.text = "WEAPON: %s\nAMMO: %d/%d" % [current_weapon.name, clip, reserve]
+				ammo_label.text = "%s - %d/%d" % [current_weapon.name, clip, reserve]
 		else:
-			ammo_label.text = "AMMO: --/--"
+			ammo_label.text = "--/--"
 	if score_label:
 		score_label.text = "SCORE: %d" % score
 
@@ -408,6 +424,9 @@ func die() -> void:
 
 func restart_game() -> void:
 	get_tree().reload_current_scene()
+
+func _on_menu_button_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 func update_wave_number(wave_num: int) -> void:
 	if wave_label:

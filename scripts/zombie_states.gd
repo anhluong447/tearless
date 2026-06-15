@@ -63,6 +63,7 @@ class ZombieChaseState extends ZombieState:
 			return
 
 		zombie.move_and_slide()
+		zombie.try_step_up()
 
 # ==========================================
 # ATTACK STATE
@@ -131,6 +132,7 @@ class ZombieAttackState extends ZombieState:
 		zombie.velocity.x = move_toward(zombie.velocity.x, 0.0, zombie.speed)
 		zombie.velocity.z = move_toward(zombie.velocity.z, 0.0, zombie.speed)
 		zombie.move_and_slide()
+		zombie.try_step_up()
 
 # ==========================================
 # DIE STATE
