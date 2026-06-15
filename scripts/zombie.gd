@@ -143,12 +143,12 @@ func detonate() -> void:
 	var spark_scene = load("res://scenes/spark_particles.tscn") as PackedScene
 	if spark_scene:
 		var inst = spark_scene.instantiate() as CPUParticles3D
-		get_parent().add_child(inst)
-		inst.global_position = global_position + Vector3(0, 1, 0)
+		inst.position = global_position + Vector3(0, 1, 0)
 		inst.amount = 40
 		inst.lifetime = 0.8
-		inst.emitting = true
 		inst.scale = Vector3(2.5, 2.5, 2.5)
+		get_parent().add_child(inst)
+		
 		
 	var visuals: Node3D = get_node_or_null("Visuals") as Node3D
 	if visuals:

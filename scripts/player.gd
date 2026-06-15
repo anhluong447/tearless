@@ -317,15 +317,17 @@ func spawn_impact_particles(scene: PackedScene, point: Vector3, normal: Vector3)
 	if not scene:
 		return
 	var inst = scene.instantiate() as CPUParticles3D
-	get_parent().add_child(inst)
-	inst.global_position = point
 	
+	# Position and orient the node before adding to the tree to avoid ready() origin emission
+	inst.position = point
 	if normal.is_equal_approx(Vector3.UP):
-		inst.look_at(point + Vector3.UP, Vector3.FORWARD)
+		inst.look_at_from_position(point, point + Vector3.UP, Vector3.FORWARD)
 	elif normal.is_equal_approx(Vector3.DOWN):
-		inst.look_at(point + Vector3.DOWN, Vector3.FORWARD)
+		inst.look_at_from_position(point, point + Vector3.DOWN, Vector3.FORWARD)
 	else:
-		inst.look_at(point + normal, Vector3.UP)
+		inst.look_at_from_position(point, point + normal, Vector3.UP)
+		
+	get_parent().add_child(inst)
 
 func start_reload() -> void:
 	if not current_weapon or is_reloading:
