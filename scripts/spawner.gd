@@ -92,6 +92,28 @@ func spawn_zombie() -> void:
 	zombie.set("speed_multiplier", speed_mult)
 	zombie.set("health_multiplier", health_mult)
 	
+	# Determine zombie type dynamically based on current wave
+	var z_type = 0 # Normal
+	var roll = randf()
+	if current_wave == 2:
+		if roll < 0.25:
+			z_type = 1 # Runner
+	elif current_wave == 3:
+		if roll < 0.25:
+			z_type = 1 # Runner
+		elif roll < 0.35:
+			z_type = 2 # Tank
+		elif roll < 0.45:
+			z_type = 3 # Bomber
+	elif current_wave >= 4:
+		if roll < 0.30:
+			z_type = 1 # Runner
+		elif roll < 0.45:
+			z_type = 2 # Tank
+		elif roll < 0.60:
+			z_type = 3 # Bomber
+	
+	zombie.set("zombie_type", z_type)
 	zombie.global_position = spawn_point.global_position
 	
 	# Connect to track alive count

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapon_resource.gd" id="1_script"]
+[ext_resource type="AudioStream" path="res://sound/shoot.wav" id="2_shoot"]
+[ext_resource type="AudioStream" path="res://sound/reload.wav" id="3_reload"]
+
+[resource]
+script = ExtResource("1_script")
+name = "SPAS-12"
+damage = 18
+fire_rate = 0.6
+max_ammo = 8
+reload_time = 0.4
+is_shotgun = true
+pellet_count = 8
+spread = 0.12
+shoot_sound = ExtResource("2_shoot")
+reload_sound = ExtResource("3_reload")
+gun_color = Color(0.2, 0.22, 0.25, 1)
+ads_fov_multiplier = 0.8
+ads_position = Vector3(0, -0.15, -0.3)
+is_shell_reload = true

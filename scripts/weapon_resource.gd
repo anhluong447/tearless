@@ -17,3 +17,6 @@ extends Resource
 @export var ads_fov_multiplier: float = 0.75
 @export var ads_position: Vector3 = Vector3(0.0, -0.15, -0.4)
 
+# Shell-by-shell reload
+@export var is_shell_reload: bool = false
+

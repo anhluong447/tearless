@@ -47,6 +47,15 @@ class ZombieChaseState extends ZombieState:
 		zombie.velocity.x = new_velocity.x
 		zombie.velocity.z = new_velocity.z
 		
+		# Runner leap jump
+		if zombie.zombie_type == zombie.ZombieType.RUNNER and zombie.is_on_floor():
+			var dist: float = zombie.global_position.distance_to(zombie.player.global_position)
+			if dist <= 5.0 and dist > zombie.ATTACK_RANGE and randf() < 0.02:
+				var jump_dir = (zombie.player.global_position - zombie.global_position).normalized()
+				zombie.velocity.x = jump_dir.x * zombie.speed * 1.5
+				zombie.velocity.y = 4.0
+				zombie.velocity.z = jump_dir.z * zombie.speed * 1.5
+		
 		# Check attack range
 		var dist: float = zombie.global_position.distance_to(zombie.player.global_position)
 		if dist <= zombie.ATTACK_RANGE:
@@ -59,12 +68,32 @@ class ZombieChaseState extends ZombieState:
 # ATTACK STATE
 # ==========================================
 class ZombieAttackState extends ZombieState:
+	var detonate_timer: float = 0.5
+	var started_detonation: bool = false
+
+	func enter() -> void:
+		if zombie.zombie_type == zombie.ZombieType.BOMBER:
+			started_detonation = true
+			detonate_timer = 0.5
+
 	func physics_update(delta: float) -> void:
 		if zombie.dead:
 			state_machine.transition_to("die")
 			return
 		if not zombie.player or zombie.player.health <= 0:
 			state_machine.transition_to("idle")
+			return
+
+		if zombie.zombie_type == zombie.ZombieType.BOMBER and started_detonation:
+			detonate_timer -= delta
+			
+			var visuals: Node3D = zombie.get_node_or_null("Visuals") as Node3D
+			if visuals:
+				var pulse = (int(Engine.get_physics_frames() / 3) % 2) == 0
+				visuals.scale = Vector3(1.2, 1.2, 1.2) if pulse else Vector3(0.9, 0.9, 0.9)
+				
+			if detonate_timer <= 0.0:
+				zombie.detonate()
 			return
 
 		# Apply gravity
@@ -84,14 +113,19 @@ class ZombieAttackState extends ZombieState:
 
 		if zombie.time_since_last_attack >= zombie.ATTACK_COOLDOWN:
 			zombie.time_since_last_attack = 0.0
-			zombie.player.take_damage(zombie.DAMAGE)
+			
+			var final_damage = zombie.DAMAGE
+			if zombie.zombie_type == zombie.ZombieType.TANK:
+				final_damage = zombie.DAMAGE * 2
+				
+			zombie.player.take_damage(final_damage)
 			
 			# Lunge animation (squash/stretch)
 			var visuals: Node3D = zombie.get_node_or_null("Visuals") as Node3D
 			if visuals:
 				var tween: Tween = zombie.create_tween()
-				tween.tween_property(visuals, "scale", Vector3(1.2, 0.8, 1.2), 0.1)
-				tween.tween_property(visuals, "scale", Vector3(1.0, 1.0, 1.0), 0.2)
+				tween.tween_property(visuals, "scale", visuals.scale * 1.2, 0.1)
+				tween.tween_property(visuals, "scale", visuals.scale, 0.2)
 
 		# Decelerate when attacking
 		zombie.velocity.x = move_toward(zombie.velocity.x, 0.0, zombie.speed)
@@ -109,7 +143,12 @@ class ZombieDieState extends ZombieState:
 		
 		# Award points
 		if zombie.player and zombie.player.has_method("add_score"):
-			zombie.player.add_score(10)
+			var pts = 10
+			if zombie.zombie_type == zombie.ZombieType.BOMBER:
+				pts = 15
+			elif zombie.zombie_type == zombie.ZombieType.TANK:
+				pts = 30
+			zombie.player.add_score(pts)
 			
 		# Play death splat
 		if zombie.hurt_sound:

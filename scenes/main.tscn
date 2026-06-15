@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main_script"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player_scene"]
 [ext_resource type="Script" path="res://scripts/spawner.gd" id="3_spawner_script"]
+[ext_resource type="PackedScene" path="res://scenes/shop_terminal.tscn" id="4_shop_terminal"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
 sky_top_color = Color(0.38, 0.55, 0.85, 1)
@@ -272,6 +273,9 @@ spot_angle = 45.0
 
 [node name="Player" parent="." groups=["player"] instance=ExtResource("2_player_scene")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 25)
+
+[node name="ShopTerminal" parent="." instance=ExtResource("4_shop_terminal")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.0, 2)
 
 [node name="Spawner" type="Node3D" parent="."]
 script = ExtResource("3_spawner_script")

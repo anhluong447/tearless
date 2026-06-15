@@ -42,6 +42,8 @@ var is_ads: bool = false
 var max_health: int = 100
 var health: int = max_health
 var score: int = 0
+var speed_multiplier: float = 1.0
+var damage_multiplier: float = 1.0
 
 # UI nodes
 @onready var health_label: Label = $HUD/MarginContainer/VBoxContainer/HealthLabel
@@ -205,12 +207,13 @@ func _physics_process(delta: float) -> void:
 	# Get input direction and handle movement/deceleration
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	var current_speed = SPEED * speed_multiplier
 	if direction:
-		velocity.x = direction.x * SPEED
-		velocity.z = direction.z * SPEED
+		velocity.x = direction.x * current_speed
+		velocity.z = direction.z * current_speed
 	else:
-		velocity.x = move_toward(velocity.x, 0.0, SPEED)
-		velocity.z = move_toward(velocity.z, 0.0, SPEED)
+		velocity.x = move_toward(velocity.x, 0.0, current_speed)
+		velocity.z = move_toward(velocity.z, 0.0, current_speed)
 
 	move_and_slide()
 
@@ -231,8 +234,14 @@ func swap_weapon(direction: int) -> void:
 	update_hud()
 
 func shoot() -> void:
-	if not current_weapon or is_reloading:
+	if not current_weapon:
 		return
+	if is_reloading:
+		if current_weapon.is_shell_reload:
+			# Cancel reloading immediately so player can shoot loaded shells
+			is_reloading = false
+		else:
+			return
 	if time_since_last_shot < current_weapon.fire_rate:
 		return
 		
@@ -261,23 +270,32 @@ func shoot() -> void:
 		fire_single_ray(0.0, current_weapon.damage)
 
 func fire_single_ray(spread_factor: float, damage_val: int) -> void:
-	var target_dir := Vector3.FORWARD
+	var space_state = get_world_3d().direct_space_state
+	if not space_state:
+		return
+		
+	var start_point = camera.global_position
+	var dir = -camera.global_transform.basis.z
 	if spread_factor > 0.0:
-		target_dir.x += randf_range(-spread_factor, spread_factor)
-		target_dir.y += randf_range(-spread_factor, spread_factor)
-	target_dir = target_dir.normalized()
+		dir += camera.global_transform.basis.x * randf_range(-spread_factor, spread_factor)
+		dir += camera.global_transform.basis.y * randf_range(-spread_factor, spread_factor)
+	dir = dir.normalized()
 	
-	# Point raycast in target direction
-	raycast.target_position = target_dir * 100.0
-	raycast.force_raycast_update()
+	var end_point = start_point + dir * 100.0
+	var query = PhysicsRayQueryParameters3D.create(start_point, end_point)
+	query.collision_mask = 5 # Environment (1) and Zombie (4)
+	query.exclude = [self.get_rid()]
 	
-	if raycast.is_colliding():
-		var collider = raycast.get_collider()
-		var point = raycast.get_collision_point()
-		var normal = raycast.get_collision_normal()
+	var result = space_state.intersect_ray(query)
+	if not result.is_empty():
+		var collider = result.collider
+		var point = result.position
+		var normal = result.normal
+		
+		var final_damage = int(damage_val * damage_multiplier)
 		
 		if collider and collider.has_method("take_damage"):
-			collider.take_damage(damage_val)
+			collider.take_damage(final_damage)
 			spawn_impact_particles(blood_particles, point, normal)
 		else:
 			spawn_impact_particles(spark_particles, point, normal)
@@ -300,7 +318,8 @@ func start_reload() -> void:
 	if not current_weapon or is_reloading:
 		return
 	var reserve: int = ammo_reserves.get(current_weapon.name, 0)
-	if reserve <= 0:
+	var clip: int = weapon_clip_ammo.get(current_weapon.name, 0)
+	if reserve <= 0 or clip >= current_weapon.max_ammo:
 		return
 		
 	is_reloading = true
@@ -310,16 +329,33 @@ func start_reload() -> void:
 	update_hud()
 
 func finish_reload() -> void:
-	is_reloading = false
 	var weapon_name = current_weapon.name
 	var current_clip: int = weapon_clip_ammo.get(weapon_name, 0)
-	var needed: int = current_weapon.max_ammo - current_clip
 	var reserve: int = ammo_reserves.get(weapon_name, 0)
-	var to_load: int = mini(needed, reserve)
 	
-	weapon_clip_ammo[weapon_name] = current_clip + to_load
-	ammo_reserves[weapon_name] = reserve - to_load
-	update_hud()
+	if current_weapon.is_shell_reload:
+		if reserve > 0 and current_clip < current_weapon.max_ammo:
+			weapon_clip_ammo[weapon_name] = current_clip + 1
+			ammo_reserves[weapon_name] = reserve - 1
+			update_hud()
+			
+			# If still not full, continue reloading next shell
+			if weapon_clip_ammo[weapon_name] < current_weapon.max_ammo and ammo_reserves[weapon_name] > 0:
+				reload_timer = current_weapon.reload_time
+				if reload_sound:
+					reload_sound.play()
+			else:
+				is_reloading = false
+		else:
+			is_reloading = false
+	else:
+		is_reloading = false
+		var needed: int = current_weapon.max_ammo - current_clip
+		var to_load: int = mini(needed, reserve)
+		
+		weapon_clip_ammo[weapon_name] = current_clip + to_load
+		ammo_reserves[weapon_name] = reserve - to_load
+		update_hud()
 
 func show_muzzle_flash() -> void:
 	muzzle_flash.visible = true
