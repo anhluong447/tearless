@@ -1,131 +1,289 @@
 [gd_scene format=3 uid="uid://main12345"]
 
-[ext_resource type="Script" uid="uid://drghabpo4kgf3" path="res://scripts/main.gd" id="1_main_script"]
-[ext_resource type="PackedScene" uid="uid://c1abcdefgh123" path="res://scenes/player.tscn" id="2_player_scene"]
-[ext_resource type="Script" uid="uid://cawfc6h634dbu" path="res://scripts/spawner.gd" id="3_spawner_script"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main_script"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player_scene"]
+[ext_resource type="Script" path="res://scripts/spawner.gd" id="3_spawner_script"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
+sky_top_color = Color(0.38, 0.55, 0.85, 1)
+sky_horizon_color = Color(0.7, 0.8, 0.9, 1)
+ground_bottom_color = Color(0.2, 0.2, 0.25, 1)
+ground_horizon_color = Color(0.7, 0.8, 0.9, 1)
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("ProceduralSkyMaterial_1")
 
 [sub_resource type="Environment" id="Environment_1"]
-background_mode = 1
-background_color = Color(0.01, 0.01, 0.03, 1)
-ambient_light_color = Color(0.05, 0.05, 0.08, 1)
-volumetric_fog_enabled = true
-volumetric_fog_density = 0.03
-volumetric_fog_albedo = Color(0.05, 0.05, 0.1, 1)
-volumetric_fog_emission = Color(0.01, 0.01, 0.02, 1)
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 3
+ambient_light_color = Color(0.65, 0.65, 0.7, 1)
+ambient_light_sky_contribution = 0.5
+tonemap_mode = 2
+tonemap_exposure = 1.0
+glow_enabled = true
+glow_intensity = 0.4
 
-[sub_resource type="StandardMaterial3D" id="Material_Floor"]
-albedo_color = Color(0.08, 0.08, 0.12, 1)
-metallic = 0.7
-roughness = 0.3
+[sub_resource type="StandardMaterial3D" id="Material_Asphalt"]
+albedo_color = Color(0.15, 0.15, 0.18, 1)
+roughness = 0.9
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="Material_Wall"]
-albedo_color = Color(0.12, 0.12, 0.16, 1)
-metallic = 0.2
+[sub_resource type="StandardMaterial3D" id="Material_Sidewalk"]
+albedo_color = Color(0.45, 0.45, 0.45, 1)
+roughness = 0.7
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="Material_BrickBuilding"]
+albedo_color = Color(0.45, 0.2, 0.15, 1)
 roughness = 0.8
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="Material_NeonBlue"]
-albedo_color = Color(0, 0.6, 1, 1)
-emission_enabled = true
-emission = Color(0, 0.6, 1, 1)
-emission_energy_multiplier = 3.0
+[sub_resource type="StandardMaterial3D" id="Material_GlassBuilding"]
+albedo_color = Color(0.1, 0.4, 0.5, 1)
+metallic = 0.9
+roughness = 0.15
+uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="Material_NeonPink"]
-albedo_color = Color(1, 0, 0.6, 1)
+[sub_resource type="StandardMaterial3D" id="Material_ConcreteBuilding"]
+albedo_color = Color(0.35, 0.35, 0.38, 1)
+roughness = 0.8
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="Material_StreetBarrier"]
+albedo_color = Color(0.7, 0.15, 0.15, 1)
+roughness = 0.6
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="Material_LampWarm"]
+albedo_color = Color(1, 0.9, 0.5, 1)
 emission_enabled = true
-emission = Color(1, 0, 0.6, 1)
-emission_energy_multiplier = 3.0
+emission = Color(1, 0.9, 0.5, 1)
+emission_energy_multiplier = 4.0
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_1"]
 
-[node name="Main" type="Node3D" unique_id=1359075617]
+[node name="Main" type="Node3D"]
 script = ExtResource("1_main_script")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1830185945]
-transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 10, 0)
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 10, 0)
+light_color = Color(1, 0.95, 0.85, 1)
+light_energy = 1.6
 shadow_enabled = true
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1181509280]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1")
 
-[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1572954925]
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_1")
 
-[node name="Floor" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1015907161]
+[node name="Floor" type="CSGBox3D" parent="NavigationRegion3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 use_collision = true
 size = Vector3(60, 1, 60)
-material = SubResource("Material_Floor")
+material = SubResource("Material_Asphalt")
 
-[node name="Obstacle1" type="CSGBox3D" parent="NavigationRegion3D" unique_id=343471395]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 3.1252441, -10)
+[node name="WallNorth" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -30.5)
 use_collision = true
-size = Vector3(4, 6.2504883, 4)
-material = SubResource("Material_NeonBlue")
+size = Vector3(60, 20, 1)
+material = SubResource("Material_ConcreteBuilding")
 
-[node name="LightBlue" type="OmniLight3D" parent="NavigationRegion3D/Obstacle1"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
-light_color = Color(0, 0.6, 1, 1)
-light_energy = 5.0
-omni_range = 15.0
-
-[node name="Obstacle2" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1937245072]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2, 10)
+[node name="WallSouth" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 30.5)
 use_collision = true
-size = Vector3(4, 4, 4)
-material = SubResource("Material_NeonPink")
+size = Vector3(60, 20, 1)
+material = SubResource("Material_ConcreteBuilding")
 
-[node name="LightPink" type="OmniLight3D" parent="NavigationRegion3D/Obstacle2"]
+[node name="WallWest" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30.5, 10, 0)
+use_collision = true
+size = Vector3(1, 20, 60)
+material = SubResource("Material_ConcreteBuilding")
+
+[node name="WallEast" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 10, 0)
+use_collision = true
+size = Vector3(1, 20, 60)
+material = SubResource("Material_ConcreteBuilding")
+
+[node name="NW_Sidewalk" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 0.1, -16)
+use_collision = true
+size = Vector3(16, 0.2, 16)
+material = SubResource("Material_Sidewalk")
+
+[node name="NW_Building" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 10, -16)
+use_collision = true
+size = Vector3(12, 20, 12)
+material = SubResource("Material_BrickBuilding")
+
+[node name="NE_Sidewalk" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.1, -16)
+use_collision = true
+size = Vector3(16, 0.2, 16)
+material = SubResource("Material_Sidewalk")
+
+[node name="NE_Building" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 12, -16)
+use_collision = true
+size = Vector3(12, 24, 12)
+material = SubResource("Material_GlassBuilding")
+
+[node name="SW_Sidewalk" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 0.1, 16)
+use_collision = true
+size = Vector3(16, 0.2, 16)
+material = SubResource("Material_Sidewalk")
+
+[node name="SW_Building" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 8, 16)
+use_collision = true
+size = Vector3(12, 16, 12)
+material = SubResource("Material_ConcreteBuilding")
+
+[node name="SE_Sidewalk" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.1, 16)
+use_collision = true
+size = Vector3(16, 0.2, 16)
+material = SubResource("Material_Sidewalk")
+
+[node name="SE_Building" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 15, 16)
+use_collision = true
+size = Vector3(12, 30, 12)
+material = SubResource("Material_GlassBuilding")
+
+[node name="CenterPlaza" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+use_collision = true
+size = Vector3(8, 0.2, 8)
+material = SubResource("Material_Sidewalk")
+
+[node name="CenterStatueBase" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+use_collision = true
+size = Vector3(2, 0.8, 2)
+material = SubResource("Material_ConcreteBuilding")
+
+[node name="CenterColumn" type="CSGBox3D" parent="NavigationRegion3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
-light_color = Color(1, 0, 0.6, 1)
-light_energy = 5.0
-omni_range = 15.0
-
-[node name="Obstacle3" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1242718474]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -8)
 use_collision = true
-size = Vector3(6, 3, 2)
-material = SubResource("Material_Wall")
+size = Vector3(1, 4, 1)
+material = SubResource("Material_BrickBuilding")
 
-[node name="WallNorth" type="CSGBox3D" parent="NavigationRegion3D" unique_id=842818004]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -30)
+[node name="Barrier1" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.5, -5)
 use_collision = true
-size = Vector3(60, 6, 1)
-material = SubResource("Material_Wall")
+size = Vector3(2, 1, 0.6)
+material = SubResource("Material_StreetBarrier")
 
-[node name="WallSouth" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1744718508]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 30)
+[node name="Barrier2" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, -5)
 use_collision = true
-size = Vector3(60, 6, 1)
-material = SubResource("Material_Wall")
+size = Vector3(2, 1, 0.6)
+material = SubResource("Material_StreetBarrier")
 
-[node name="WallWest" type="CSGBox3D" parent="NavigationRegion3D" unique_id=235597677]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 3, 0)
+[node name="Barrier3" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.5, 5)
 use_collision = true
-size = Vector3(1, 6, 60)
-material = SubResource("Material_Wall")
+size = Vector3(2, 1, 0.6)
+material = SubResource("Material_StreetBarrier")
 
-[node name="WallEast" type="CSGBox3D" parent="NavigationRegion3D" unique_id=194743891]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 3, 0)
+[node name="Barrier4" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, 5)
 use_collision = true
-size = Vector3(1, 6, 60)
-material = SubResource("Material_Wall")
+size = Vector3(2, 1, 0.6)
+material = SubResource("Material_StreetBarrier")
 
-[node name="Player" parent="." unique_id=1262740660 groups=["player"] instance=ExtResource("2_player_scene")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 15)
+[node name="Lamp1_Pole" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 2, -7)
+use_collision = true
+size = Vector3(0.2, 4, 0.2)
+material = SubResource("Material_ConcreteBuilding")
 
-[node name="Spawner" type="Node3D" parent="." unique_id=1264306298]
+[node name="Lamp1_Head" type="CSGBox3D" parent="NavigationRegion3D/Lamp1_Pole"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
+size = Vector3(0.5, 0.2, 0.5)
+material = SubResource("Material_LampWarm")
+
+[node name="Lamp1_Light" type="SpotLight3D" parent="NavigationRegion3D/Lamp1_Pole"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2, 0)
+light_color = Color(1, 0.9, 0.6, 1)
+light_energy = 4.0
+spot_range = 10.0
+spot_angle = 45.0
+
+[node name="Lamp2_Pole" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 2, -7)
+use_collision = true
+size = Vector3(0.2, 4, 0.2)
+material = SubResource("Material_ConcreteBuilding")
+
+[node name="Lamp2_Head" type="CSGBox3D" parent="NavigationRegion3D/Lamp2_Pole"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
+size = Vector3(0.5, 0.2, 0.5)
+material = SubResource("Material_LampWarm")
+
+[node name="Lamp2_Light" type="SpotLight3D" parent="NavigationRegion3D/Lamp2_Pole"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2, 0)
+light_color = Color(1, 0.9, 0.6, 1)
+light_energy = 4.0
+spot_range = 10.0
+spot_angle = 45.0
+
+[node name="Lamp3_Pole" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 2, 7)
+use_collision = true
+size = Vector3(0.2, 4, 0.2)
+material = SubResource("Material_ConcreteBuilding")
+
+[node name="Lamp3_Head" type="CSGBox3D" parent="NavigationRegion3D/Lamp3_Pole"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
+size = Vector3(0.5, 0.2, 0.5)
+material = SubResource("Material_LampWarm")
+
+[node name="Lamp3_Light" type="SpotLight3D" parent="NavigationRegion3D/Lamp3_Pole"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2, 0)
+light_color = Color(1, 0.9, 0.6, 1)
+light_energy = 4.0
+spot_range = 10.0
+spot_angle = 45.0
+
+[node name="Lamp4_Pole" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 2, 7)
+use_collision = true
+size = Vector3(0.2, 4, 0.2)
+material = SubResource("Material_ConcreteBuilding")
+
+[node name="Lamp4_Head" type="CSGBox3D" parent="NavigationRegion3D/Lamp4_Pole"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
+size = Vector3(0.5, 0.2, 0.5)
+material = SubResource("Material_LampWarm")
+
+[node name="Lamp4_Light" type="SpotLight3D" parent="NavigationRegion3D/Lamp4_Pole"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2, 0)
+light_color = Color(1, 0.9, 0.6, 1)
+light_energy = 4.0
+spot_range = 10.0
+spot_angle = 45.0
+
+[node name="Player" parent="." groups=["player"] instance=ExtResource("2_player_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 25)
+
+[node name="Spawner" type="Node3D" parent="."]
 script = ExtResource("3_spawner_script")
 
-[node name="SpawnPoint1" type="Marker3D" parent="Spawner" unique_id=954082582]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0.5, -20)
+[node name="SpawnPoint1" type="Marker3D" parent="Spawner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 0.5, -26)
 
-[node name="SpawnPoint2" type="Marker3D" parent="Spawner" unique_id=1914751309]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.5, -20)
+[node name="SpawnPoint2" type="Marker3D" parent="Spawner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0.5, -26)
 
-[node name="SpawnPoint3" type="Marker3D" parent="Spawner" unique_id=107511312]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0.5, 20)
+[node name="SpawnPoint3" type="Marker3D" parent="Spawner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 0.5, 26)
 
-[node name="SpawnPoint4" type="Marker3D" parent="Spawner" unique_id=746725099]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.5, 20)
+[node name="SpawnPoint4" type="Marker3D" parent="Spawner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0.5, 26)
