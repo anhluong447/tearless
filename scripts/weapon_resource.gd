@@ -12,3 +12,8 @@ extends Resource
 @export var shoot_sound: AudioStream
 @export var reload_sound: AudioStream
 @export var gun_color: Color = Color(1, 0.8, 0, 1)
+
+# ADS properties
+@export var ads_fov_multiplier: float = 0.75
+@export var ads_position: Vector3 = Vector3(0.0, -0.15, -0.4)
+

@@ -11,13 +11,17 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var raycast: RayCast3D = $Head/Camera3D/RayCast3D
-@onready var muzzle_flash: MeshInstance3D = $Head/Camera3D/MuzzleFlash
+@onready var muzzle_flash: MeshInstance3D = $Head/Camera3D/Gun/MuzzleFlash
 @onready var gun_mesh: MeshInstance3D = $Head/Camera3D/Gun
 
 # Weapon resource database
 @export var weapons: Array[WeaponData] = []
 var current_weapon_idx: int = 0
 var current_weapon: WeaponData = null
+
+# Particle effects
+@export var spark_particles: PackedScene = preload("res://scenes/spark_particles.tscn")
+@export var blood_particles: PackedScene = preload("res://scenes/blood_particles.tscn")
 
 # Ammo tracking (per weapon name)
 var weapon_clip_ammo: Dictionary = {} # { "Pistol": 30, "Shotgun": 6 }
@@ -27,6 +31,12 @@ var ammo_reserves: Dictionary = {}    # { "Pistol": 90, "Shotgun": 24 }
 var time_since_last_shot: float = 0.0
 var is_reloading: bool = false
 var reload_timer: float = 0.0
+
+# ADS variables
+const HIP_POSITION := Vector3(0.2, -0.2, -0.4)
+const DEFAULT_FOV := 75.0
+var ads_speed: float = 12.0
+var is_ads: bool = false
 
 # Gameplay variables
 var max_health: int = 100
@@ -40,6 +50,7 @@ var score: int = 0
 @onready var wave_label: Label = $HUD/MarginContainer/VBoxContainer/WaveLabel
 @onready var wave_alert: Label = $HUD/WaveAlert
 @onready var game_over_screen: CenterContainer = $HUD/GameOverScreen
+@onready var crosshair: Control = $HUD/Crosshair
 
 # Sound players
 @onready var shoot_sound: AudioStreamPlayer = $ShootSound
@@ -62,6 +73,7 @@ func setup_inputs() -> void:
 		"move_right": KEY_D,
 		"jump": KEY_SPACE,
 		"shoot": MOUSE_BUTTON_LEFT,
+		"ads": MOUSE_BUTTON_RIGHT,
 		"reload": KEY_R,
 		"ui_cancel": KEY_ESCAPE,
 		"swap_next": MOUSE_BUTTON_WHEEL_DOWN,
@@ -75,7 +87,7 @@ func setup_inputs() -> void:
 			InputMap.add_action(action)
 			var key = actions[action]
 			var event: InputEvent
-			if key == MOUSE_BUTTON_LEFT or key == MOUSE_BUTTON_WHEEL_DOWN or key == MOUSE_BUTTON_WHEEL_UP:
+			if key == MOUSE_BUTTON_LEFT or key == MOUSE_BUTTON_RIGHT or key == MOUSE_BUTTON_WHEEL_DOWN or key == MOUSE_BUTTON_WHEEL_UP:
 				var m_event := InputEventMouseButton.new()
 				m_event.button_index = key
 				event = m_event
@@ -135,6 +147,24 @@ func _physics_process(delta: float) -> void:
 		if Input.is_action_just_pressed("shoot"):
 			restart_game()
 		return
+
+	# Handle ADS (Aim Down Sights)
+	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		is_ads = Input.is_action_pressed("ads")
+	else:
+		is_ads = false
+
+	var target_fov := DEFAULT_FOV
+	var target_pos := HIP_POSITION
+
+	if is_ads and current_weapon:
+		target_fov = DEFAULT_FOV * current_weapon.ads_fov_multiplier
+		target_pos = current_weapon.ads_position
+
+	camera.fov = lerp(camera.fov, target_fov, ads_speed * delta)
+	if gun_mesh:
+		gun_mesh.position = lerp(gun_mesh.position, target_pos, ads_speed * delta)
+
 
 	# Handle shooting/reload timers
 	time_since_last_shot += delta
@@ -215,6 +245,10 @@ func shoot() -> void:
 	weapon_clip_ammo[current_weapon.name] = clip_ammo - 1
 	update_hud()
 	
+	if crosshair:
+		var kick_amt = 15.0 if current_weapon.is_shotgun else 8.0
+		crosshair.set("shoot_kick", crosshair.get("shoot_kick") + kick_amt)
+	
 	if shoot_sound:
 		shoot_sound.play()
 	show_muzzle_flash()
@@ -239,8 +273,28 @@ func fire_single_ray(spread_factor: float, damage_val: int) -> void:
 	
 	if raycast.is_colliding():
 		var collider = raycast.get_collider()
+		var point = raycast.get_collision_point()
+		var normal = raycast.get_collision_normal()
+		
 		if collider and collider.has_method("take_damage"):
 			collider.take_damage(damage_val)
+			spawn_impact_particles(blood_particles, point, normal)
+		else:
+			spawn_impact_particles(spark_particles, point, normal)
+
+func spawn_impact_particles(scene: PackedScene, point: Vector3, normal: Vector3) -> void:
+	if not scene:
+		return
+	var inst = scene.instantiate() as CPUParticles3D
+	get_parent().add_child(inst)
+	inst.global_position = point
+	
+	if normal.is_equal_approx(Vector3.UP):
+		inst.look_at(point + Vector3.UP, Vector3.FORWARD)
+	elif normal.is_equal_approx(Vector3.DOWN):
+		inst.look_at(point + Vector3.DOWN, Vector3.FORWARD)
+	else:
+		inst.look_at(point + normal, Vector3.UP)
 
 func start_reload() -> void:
 	if not current_weapon or is_reloading:
@@ -269,8 +323,18 @@ func finish_reload() -> void:
 
 func show_muzzle_flash() -> void:
 	muzzle_flash.visible = true
+	var light = muzzle_flash.get_node_or_null("MuzzleLight") as OmniLight3D
+	var particles = muzzle_flash.get_node_or_null("MuzzleParticles") as CPUParticles3D
+	if light:
+		light.visible = true
+	if particles:
+		particles.restart()
+		particles.emitting = true
 	await get_tree().create_timer(0.05).timeout
 	muzzle_flash.visible = false
+	if light:
+		light.visible = false
+
 
 func take_damage(amount: int) -> void:
 	if health <= 0:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://c1abcdefgh123"]
+[gd_scene load_steps=7 format=3 uid="uid://c1abcdefgh123"]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_script"]
 [ext_resource type="AudioStream" path="res://sound/shoot.wav" id="2_shoot"]
@@ -6,6 +6,7 @@
 [ext_resource type="AudioStream" path="res://sound/hit.wav" id="4_hit"]
 [ext_resource type="Resource" path="res://weapons/pistol.tres" id="5_pistol"]
 [ext_resource type="Resource" path="res://weapons/shotgun.tres" id="6_shotgun"]
+[ext_resource type="Script" path="res://scripts/crosshair.gd" id="7_crosshair"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.5
@@ -23,6 +24,15 @@ albedo_color = Color(1, 0.8, 0, 1)
 emission_enabled = true
 emission = Color(1, 0.8, 0, 1)
 emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_Spark"]
+size = Vector3(0.03, 0.03, 0.03)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_Spark"]
+albedo_color = Color(1, 0.6, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.6, 0.1, 1)
+emission_energy_multiplier = 4.0
 
 [node name="Player" type="CharacterBody3D" groups=["player"]]
 collision_layer = 2
@@ -52,11 +62,32 @@ collision_mask = 5
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -0.2, -0.4)
 mesh = SubResource("BoxMesh_1")
 
-[node name="MuzzleFlash" type="MeshInstance3D" parent="Head/Camera3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -0.2, -0.65)
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Head/Camera3D/Gun"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.25)
 visible = false
 mesh = SubResource("BoxMesh_1")
 surface_material_override/0 = SubResource("StandardMaterial3D_1")
+
+[node name="MuzzleLight" type="OmniLight3D" parent="Head/Camera3D/Gun/MuzzleFlash"]
+visible = false
+light_color = Color(1, 0.705882, 0.196078, 1)
+light_energy = 3.0
+omni_range = 8.0
+
+[node name="MuzzleParticles" type="CPUParticles3D" parent="Head/Camera3D/Gun/MuzzleFlash"]
+emitting = false
+amount = 12
+lifetime = 0.15
+one_shot = true
+explosiveness = 1.0
+direction = Vector3(0, 0, -1)
+spread = 30.0
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 6.0
+initial_velocity_max = 12.0
+mesh = SubResource("BoxMesh_Spark")
+surface_material_override/0 = SubResource("StandardMaterial3D_Spark")
+
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
@@ -105,19 +136,16 @@ text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Crosshair" type="ColorRect" parent="HUD"]
+[node name="Crosshair" type="Control" parent="HUD"]
+layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -4.0
-offset_top = -4.0
-offset_right = 4.0
-offset_bottom = 4.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(1, 1, 1, 0.5)
+script = ExtResource("7_crosshair")
 
 [node name="GameOverScreen" type="CenterContainer" parent="HUD"]
 anchors_preset = 15

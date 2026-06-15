@@ -17,3 +17,6 @@ spread = 0.0
 shoot_sound = ExtResource("2_shoot")
 reload_sound = ExtResource("3_reload")
 gun_color = Color(1, 0.8, 0, 1)
+ads_fov_multiplier = 0.7
+ads_position = Vector3(0, -0.15, -0.4)
+

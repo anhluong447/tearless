@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://blood12345"]
+
+[ext_resource type="Script" path="res://scripts/impact_particles.gd" id="1_impact_script"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_color = Color(0.6, 0.0, 0.0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+material = SubResource("StandardMaterial3D_1")
+size = Vector3(0.06, 0.06, 0.06)
+
+[node name="BloodParticles" type="CPUParticles3D"]
+emitting = false
+amount = 12
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+direction = Vector3(0, 1, 0)
+spread = 45.0
+gravity = Vector3(0, -9.8, 0)
+initial_velocity_min = 2.0
+initial_velocity_max = 5.0
+mesh = SubResource("BoxMesh_1")
+script = ExtResource("1_impact_script")

@@ -6,8 +6,36 @@
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
-background_color = Color(0.08, 0.08, 0.12, 1)
-ambient_light_color = Color(0.2, 0.2, 0.25, 1)
+background_color = Color(0.01, 0.01, 0.03, 1)
+ambient_light_color = Color(0.05, 0.05, 0.08, 1)
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.03
+volumetric_fog_albedo = Color(0.05, 0.05, 0.1, 1)
+volumetric_fog_emission = Color(0.01, 0.01, 0.02, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_Floor"]
+albedo_color = Color(0.08, 0.08, 0.12, 1)
+metallic = 0.7
+roughness = 0.3
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="Material_Wall"]
+albedo_color = Color(0.12, 0.12, 0.16, 1)
+metallic = 0.2
+roughness = 0.8
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="Material_NeonBlue"]
+albedo_color = Color(0, 0.6, 1, 1)
+emission_enabled = true
+emission = Color(0, 0.6, 1, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="StandardMaterial3D" id="Material_NeonPink"]
+albedo_color = Color(1, 0, 0.6, 1)
+emission_enabled = true
+emission = Color(1, 0, 0.6, 1)
+emission_energy_multiplier = 3.0
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_1"]
 
@@ -28,41 +56,61 @@ navigation_mesh = SubResource("NavigationMesh_1")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 use_collision = true
 size = Vector3(60, 1, 60)
+material = SubResource("Material_Floor")
 
 [node name="Obstacle1" type="CSGBox3D" parent="NavigationRegion3D" unique_id=343471395]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 3.1252441, -10)
 use_collision = true
 size = Vector3(4, 6.2504883, 4)
+material = SubResource("Material_NeonBlue")
+
+[node name="LightBlue" type="OmniLight3D" parent="NavigationRegion3D/Obstacle1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+light_color = Color(0, 0.6, 1, 1)
+light_energy = 5.0
+omni_range = 15.0
 
 [node name="Obstacle2" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1937245072]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2, 10)
 use_collision = true
 size = Vector3(4, 4, 4)
+material = SubResource("Material_NeonPink")
+
+[node name="LightPink" type="OmniLight3D" parent="NavigationRegion3D/Obstacle2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+light_color = Color(1, 0, 0.6, 1)
+light_energy = 5.0
+omni_range = 15.0
 
 [node name="Obstacle3" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1242718474]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -8)
 use_collision = true
 size = Vector3(6, 3, 2)
+material = SubResource("Material_Wall")
 
 [node name="WallNorth" type="CSGBox3D" parent="NavigationRegion3D" unique_id=842818004]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -30)
 use_collision = true
 size = Vector3(60, 6, 1)
+material = SubResource("Material_Wall")
 
 [node name="WallSouth" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1744718508]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 30)
 use_collision = true
 size = Vector3(60, 6, 1)
+material = SubResource("Material_Wall")
 
 [node name="WallWest" type="CSGBox3D" parent="NavigationRegion3D" unique_id=235597677]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 3, 0)
 use_collision = true
 size = Vector3(1, 6, 60)
+material = SubResource("Material_Wall")
 
 [node name="WallEast" type="CSGBox3D" parent="NavigationRegion3D" unique_id=194743891]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 3, 0)
 use_collision = true
 size = Vector3(1, 6, 60)
+material = SubResource("Material_Wall")
 
 [node name="Player" parent="." unique_id=1262740660 groups=["player"] instance=ExtResource("2_player_scene")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 15)
