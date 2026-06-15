@@ -14,8 +14,9 @@ func _ready() -> void:
 		spawner.connect("wave_completed", _on_wave_completed)
 		spawner.connect("countdown_tick", _on_countdown_tick)
 	
-	# Wait one frame for CSG shapes and physics to settle, then bake the navmesh
-	await get_tree().physics_frame
+	# Wait a few frames for CSG shapes and physics to settle, then bake the navmesh
+	for i in range(5):
+		await get_tree().physics_frame
 	if nav_region:
 		nav_region.bake_navigation_mesh()
 

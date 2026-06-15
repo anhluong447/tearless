@@ -32,11 +32,12 @@ class ZombieChaseState extends ZombieState:
 			zombie.velocity.y -= zombie.gravity * delta
 
 		zombie.nav_agent.target_position = zombie.player.global_position
-		if zombie.nav_agent.is_navigation_finished():
-			return
-
+		
 		var next_pos: Vector3 = zombie.nav_agent.get_next_path_position()
-		var new_velocity: Vector3 = (next_pos - zombie.global_position).normalized() * zombie.speed
+		var new_velocity: Vector3 = Vector3.ZERO
+		
+		if not zombie.nav_agent.is_navigation_finished():
+			new_velocity = (next_pos - zombie.global_position).normalized() * zombie.speed
 
 		# Rotate to face player
 		var look_dir: Vector2 = Vector2(new_velocity.x, new_velocity.z)
