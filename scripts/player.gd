@@ -1,46 +1,61 @@
 extends CharacterBody3D
 
-const SPEED = 5.0
-const JUMP_VELOCITY = 4.5
+const SPEED: float = 5.0
+const JUMP_VELOCITY: float = 4.5
 
 # Get the gravity from the project settings to be synced with RigidBody nodes.
-var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
+var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 # Camera sensitivity and nodes
-@export var sensitivity = 0.003
-@onready var head = $Head
-@onready var camera = $Head/Camera3D
-@onready var raycast = $Head/Camera3D/RayCast3D
-@onready var muzzle_flash = $Head/Camera3D/MuzzleFlash
+@export var sensitivity: float = 0.003
+@onready var head: Node3D = $Head
+@onready var camera: Camera3D = $Head/Camera3D
+@onready var raycast: RayCast3D = $Head/Camera3D/RayCast3D
+@onready var muzzle_flash: MeshInstance3D = $Head/Camera3D/MuzzleFlash
+@onready var gun_mesh: MeshInstance3D = $Head/Camera3D/Gun
+
+# Weapon resource database
+@export var weapons: Array[WeaponData] = []
+var current_weapon_idx: int = 0
+var current_weapon: WeaponData = null
+
+# Ammo tracking (per weapon name)
+var weapon_clip_ammo: Dictionary = {} # { "Pistol": 30, "Shotgun": 6 }
+var ammo_reserves: Dictionary = {}    # { "Pistol": 90, "Shotgun": 24 }
+
+# Timing and reload states
+var time_since_last_shot: float = 0.0
+var is_reloading: bool = false
+var reload_timer: float = 0.0
 
 # Gameplay variables
-var max_health = 100
-var health = max_health
-var max_ammo = 30
-var ammo = max_ammo
-var score = 0
+var max_health: int = 100
+var health: int = max_health
+var score: int = 0
 
 # UI nodes
-@onready var health_label = $HUD/MarginContainer/VBoxContainer/HealthLabel
-@onready var ammo_label = $HUD/MarginContainer/VBoxContainer/AmmoLabel
-@onready var score_label = $HUD/MarginContainer/VBoxContainer/ScoreLabel
-@onready var game_over_screen = $HUD/GameOverScreen
+@onready var health_label: Label = $HUD/MarginContainer/VBoxContainer/HealthLabel
+@onready var ammo_label: Label = $HUD/MarginContainer/VBoxContainer/AmmoLabel
+@onready var score_label: Label = $HUD/MarginContainer/VBoxContainer/ScoreLabel
+@onready var wave_label: Label = $HUD/MarginContainer/VBoxContainer/WaveLabel
+@onready var wave_alert: Label = $HUD/WaveAlert
+@onready var game_over_screen: CenterContainer = $HUD/GameOverScreen
 
 # Sound players
-@onready var shoot_sound = $ShootSound
-@onready var reload_sound = $ReloadSound
-@onready var hurt_sound = $HurtSound
+@onready var shoot_sound: AudioStreamPlayer = $ShootSound
+@onready var reload_sound: AudioStreamPlayer = $ReloadSound
+@onready var hurt_sound: AudioStreamPlayer = $HurtSound
 
-func _enter_tree():
+func _enter_tree() -> void:
 	setup_inputs()
 
-func _ready():
+func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	update_hud()
 	game_over_screen.hide()
+	setup_weapons()
 
-func setup_inputs():
-	var actions = {
+func setup_inputs() -> void:
+	var actions: Dictionary = {
 		"move_forward": KEY_W,
 		"move_backward": KEY_S,
 		"move_left": KEY_A,
@@ -48,29 +63,67 @@ func setup_inputs():
 		"jump": KEY_SPACE,
 		"shoot": MOUSE_BUTTON_LEFT,
 		"reload": KEY_R,
-		"ui_cancel": KEY_ESCAPE
+		"ui_cancel": KEY_ESCAPE,
+		"swap_next": MOUSE_BUTTON_WHEEL_DOWN,
+		"swap_prev": MOUSE_BUTTON_WHEEL_UP,
+		"weapon_1": KEY_1,
+		"weapon_2": KEY_2
 	}
 	
 	for action in actions:
 		if not InputMap.has_action(action):
 			InputMap.add_action(action)
 			var key = actions[action]
-			var event
-			if key == MOUSE_BUTTON_LEFT:
-				event = InputEventMouseButton.new()
-				event.button_index = key
+			var event: InputEvent
+			if key == MOUSE_BUTTON_LEFT or key == MOUSE_BUTTON_WHEEL_DOWN or key == MOUSE_BUTTON_WHEEL_UP:
+				var m_event := InputEventMouseButton.new()
+				m_event.button_index = key
+				event = m_event
 			else:
-				event = InputEventKey.new()
-				event.physical_keycode = key
+				var k_event := InputEventKey.new()
+				k_event.physical_keycode = key
+				event = k_event
 			InputMap.action_add_event(action, event)
 
-func _unhandled_input(event):
+func setup_weapons() -> void:
+	if weapons.size() > 0:
+		for w in weapons:
+			if not weapon_clip_ammo.has(w.name):
+				weapon_clip_ammo[w.name] = w.max_ammo
+			if not ammo_reserves.has(w.name):
+				# Starting reserve is 3 full magazines
+				ammo_reserves[w.name] = w.max_ammo * 3
+		
+		current_weapon = weapons[current_weapon_idx]
+		update_weapon_visuals()
+	update_hud()
+
+func update_weapon_visuals() -> void:
+	if not current_weapon:
+		return
+		
+	# Assign sound streams from resource
+	if shoot_sound:
+		shoot_sound.stream = current_weapon.shoot_sound
+	if reload_sound:
+		reload_sound.stream = current_weapon.reload_sound
+		
+	# Apply weapon mesh material color override
+	if gun_mesh:
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = current_weapon.gun_color
+		mat.emission_enabled = true
+		mat.emission = current_weapon.gun_color
+		mat.emission_energy_multiplier = 0.5
+		gun_mesh.material_override = mat
+
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * sensitivity)
 		head.rotate_x(-event.relative.y * sensitivity)
 		head.rotation.x = clamp(head.rotation.x, deg_to_rad(-89), deg_to_rad(89))
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	# Check exit mouse capture
 	if Input.is_action_just_pressed("ui_cancel"):
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
@@ -83,6 +136,13 @@ func _physics_process(delta):
 			restart_game()
 		return
 
+	# Handle shooting/reload timers
+	time_since_last_shot += delta
+	if is_reloading:
+		reload_timer -= delta
+		if reload_timer <= 0.0:
+			finish_reload()
+
 	# Add gravity
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -92,58 +152,127 @@ func _physics_process(delta):
 		velocity.y = JUMP_VELOCITY
 
 	# Handle shooting
-	if Input.is_action_just_pressed("shoot") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+	if Input.is_action_pressed("shoot") and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		shoot()
 
 	# Handle reload
-	if Input.is_action_just_pressed("reload") and ammo < max_ammo:
-		reload()
+	if Input.is_action_just_pressed("reload") and current_weapon:
+		var clip = weapon_clip_ammo.get(current_weapon.name, 0)
+		if clip < current_weapon.max_ammo and not is_reloading:
+			start_reload()
+
+	# Handle weapon swap input
+	if not is_reloading:
+		if Input.is_action_just_pressed("swap_next"):
+			swap_weapon(1)
+		elif Input.is_action_just_pressed("swap_prev"):
+			swap_weapon(-1)
+		elif Input.is_action_just_pressed("weapon_1") and weapons.size() > 0:
+			select_weapon(0)
+		elif Input.is_action_just_pressed("weapon_2") and weapons.size() > 1:
+			select_weapon(1)
 
 	# Get input direction and handle movement/deceleration
-	var input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
-	var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	if direction:
 		velocity.x = direction.x * SPEED
 		velocity.z = direction.z * SPEED
 	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
-		velocity.z = move_toward(velocity.z, 0, SPEED)
+		velocity.x = move_toward(velocity.x, 0.0, SPEED)
+		velocity.z = move_toward(velocity.z, 0.0, SPEED)
 
 	move_and_slide()
 
-func shoot():
-	if ammo <= 0:
-		# Auto reload when shooting with empty gun
-		reload()
+func select_weapon(idx: int) -> void:
+	if idx == current_weapon_idx or idx >= weapons.size() or is_reloading:
 		return
-	
-	ammo -= 1
+	current_weapon_idx = idx
+	current_weapon = weapons[current_weapon_idx]
+	update_weapon_visuals()
+	update_hud()
+
+func swap_weapon(direction: int) -> void:
+	if weapons.size() <= 1 or is_reloading:
+		return
+	current_weapon_idx = (current_weapon_idx + direction + weapons.size()) % weapons.size()
+	current_weapon = weapons[current_weapon_idx]
+	update_weapon_visuals()
+	update_hud()
+
+func shoot() -> void:
+	if not current_weapon or is_reloading:
+		return
+	if time_since_last_shot < current_weapon.fire_rate:
+		return
+		
+	var clip_ammo: int = weapon_clip_ammo.get(current_weapon.name, 0)
+	if clip_ammo <= 0:
+		start_reload()
+		return
+		
+	time_since_last_shot = 0.0
+	weapon_clip_ammo[current_weapon.name] = clip_ammo - 1
 	update_hud()
 	
-	# Play shooting sound
 	if shoot_sound:
 		shoot_sound.play()
-	
-	# Show muzzle flash (visual effect)
 	show_muzzle_flash()
+	
+	# Raycast shoot logic
+	if current_weapon.is_shotgun:
+		for i in range(current_weapon.pellet_count):
+			fire_single_ray(current_weapon.spread, current_weapon.damage)
+	else:
+		fire_single_ray(0.0, current_weapon.damage)
+
+func fire_single_ray(spread_factor: float, damage_val: int) -> void:
+	var target_dir := Vector3.FORWARD
+	if spread_factor > 0.0:
+		target_dir.x += randf_range(-spread_factor, spread_factor)
+		target_dir.y += randf_range(-spread_factor, spread_factor)
+	target_dir = target_dir.normalized()
+	
+	# Point raycast in target direction
+	raycast.target_position = target_dir * 100.0
+	raycast.force_raycast_update()
 	
 	if raycast.is_colliding():
 		var collider = raycast.get_collider()
 		if collider and collider.has_method("take_damage"):
-			collider.take_damage(25) # Deal 25 damage per shot
+			collider.take_damage(damage_val)
 
-func reload():
-	ammo = max_ammo
-	update_hud()
+func start_reload() -> void:
+	if not current_weapon or is_reloading:
+		return
+	var reserve: int = ammo_reserves.get(current_weapon.name, 0)
+	if reserve <= 0:
+		return
+		
+	is_reloading = true
+	reload_timer = current_weapon.reload_time
 	if reload_sound:
 		reload_sound.play()
+	update_hud()
 
-func show_muzzle_flash():
+func finish_reload() -> void:
+	is_reloading = false
+	var weapon_name = current_weapon.name
+	var current_clip: int = weapon_clip_ammo.get(weapon_name, 0)
+	var needed: int = current_weapon.max_ammo - current_clip
+	var reserve: int = ammo_reserves.get(weapon_name, 0)
+	var to_load: int = mini(needed, reserve)
+	
+	weapon_clip_ammo[weapon_name] = current_clip + to_load
+	ammo_reserves[weapon_name] = reserve - to_load
+	update_hud()
+
+func show_muzzle_flash() -> void:
 	muzzle_flash.visible = true
 	await get_tree().create_timer(0.05).timeout
 	muzzle_flash.visible = false
 
-func take_damage(amount):
+func take_damage(amount: int) -> void:
 	if health <= 0:
 		return
 	health -= amount
@@ -153,21 +282,43 @@ func take_damage(amount):
 	if health <= 0:
 		die()
 
-func add_score(amount):
+func add_score(amount: int) -> void:
 	score += amount
 	update_hud()
 
-func update_hud():
+func update_hud() -> void:
 	if health_label:
 		health_label.text = "HP: %d" % health
 	if ammo_label:
-		ammo_label.text = "AMMO: %d/%d" % [ammo, max_ammo]
+		if current_weapon:
+			var clip: int = weapon_clip_ammo.get(current_weapon.name, 0)
+			var reserve: int = ammo_reserves.get(current_weapon.name, 0)
+			if is_reloading:
+				ammo_label.text = "WEAPON: %s\nAMMO: Reloading..." % current_weapon.name
+			else:
+				ammo_label.text = "WEAPON: %s\nAMMO: %d/%d" % [current_weapon.name, clip, reserve]
+		else:
+			ammo_label.text = "AMMO: --/--"
 	if score_label:
 		score_label.text = "SCORE: %d" % score
 
-func die():
+func die() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	game_over_screen.show()
 
-func restart_game():
+func restart_game() -> void:
 	get_tree().reload_current_scene()
+
+func update_wave_number(wave_num: int) -> void:
+	if wave_label:
+		wave_label.text = "WAVE: %d" % wave_num
+
+func show_wave_alert(message: String) -> void:
+	if wave_alert:
+		wave_alert.text = message
+		wave_alert.show()
+
+func hide_wave_alert() -> void:
+	if wave_alert:
+		wave_alert.text = ""
+		wave_alert.hide()

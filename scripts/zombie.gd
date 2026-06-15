@@ -1,115 +1,83 @@
 extends CharacterBody3D
 
-const SPEED = 2.5
-const JUMP_VELOCITY = 4.5
-const ATTACK_RANGE = 1.8
-const ATTACK_COOLDOWN = 1.2
-const DAMAGE = 20
+const ATTACK_RANGE: float = 1.8
+const ATTACK_COOLDOWN: float = 1.2
+const DAMAGE: int = 20
 
-var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
+var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
-var max_health = 50
-var health = max_health
-var dead = false
-var time_since_last_attack = ATTACK_COOLDOWN
+# Scaled difficulty multipliers (injected by Spawner)
+var speed_multiplier: float = 1.0
+var health_multiplier: float = 1.0
 
-var player = null
-@onready var nav_agent = $NavigationAgent3D
-@onready var hurt_sound = $HurtSound
+var speed: float = 2.5
+var max_health: int = 50
+var health: int = max_health
+var dead: bool = false
+var time_since_last_attack: float = ATTACK_COOLDOWN
 
-func _ready():
-	# Find player by group, with absolute path as fallback
-	player = get_tree().get_first_node_in_group("player")
+var player: CharacterBody3D = null
+
+# Cached nodes
+@onready var nav_agent: NavigationAgent3D = $NavigationAgent3D
+@onready var hurt_sound: AudioStreamPlayer3D = $HurtSound
+var state_machine: StateMachine = null
+
+# Option 4: Pickups Drop Scene database
+var health_pickup_scene: PackedScene = preload("res://scenes/pickup.tscn") # Loaded dynamically in Option 4
+
+func _ready() -> void:
+	# Calculate scaled attributes
+	speed = 2.5 * speed_multiplier
+	max_health = int(50.0 * health_multiplier)
+	health = max_health
+
+	# Find player node in group
+	player = get_tree().get_first_node_in_group("player") as CharacterBody3D
 	if not player:
-		player = get_node_or_null("/root/Main/Player")
-	
-	# Wait for navigation map to synchronize
+		player = get_node_or_null("/root/Main/Player") as CharacterBody3D
+
+	# Instantiate StateMachine programmatically
+	state_machine = StateMachine.new()
+	state_machine.name = "StateMachine"
+	add_child(state_machine)
+
+	# Wait for navigation map synchronization
 	await get_tree().physics_frame
 
-func _physics_process(delta):
-	time_since_last_attack += delta
-
-	if dead:
-		return
-
-	if not is_on_floor():
-		velocity.y -= gravity * delta
-
-	if not player or player.health <= 0:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
-		velocity.z = move_toward(velocity.z, 0, SPEED)
-		move_and_slide()
-		return
-
-	# Update navigation target position
-	nav_agent.target_position = player.global_position
-	
-	if nav_agent.is_navigation_finished():
-		return
-
-	var next_pos = nav_agent.get_next_path_position()
-	var new_velocity = (next_pos - global_position).normalized() * SPEED
-
-	# Rotate to face the moving direction (towards player)
-	var look_dir = Vector2(new_velocity.x, new_velocity.z)
-	if look_dir.length() > 0.1:
-		rotation.y = lerp_angle(rotation.y, atan2(-new_velocity.x, -new_velocity.z), 10.0 * delta)
-
-	velocity.x = new_velocity.x
-	velocity.z = new_velocity.z
-
-	# Check and perform attack
-	var dist = global_position.distance_to(player.global_position)
-	if dist <= ATTACK_RANGE:
-		attack_player()
-
-	move_and_slide()
-
-func attack_player():
-	if time_since_last_attack >= ATTACK_COOLDOWN:
-		time_since_last_attack = 0.0
-		player.take_damage(DAMAGE)
-		
-		# Lunge attack visual animation (squash/stretch)
-		var tween = create_tween()
-		tween.tween_property($Visuals, "scale", Vector3(1.2, 0.8, 1.2), 0.1)
-		tween.tween_property($Visuals, "scale", Vector3(1.0, 1.0, 1.0), 0.2)
-
-func take_damage(amount):
+func take_damage(amount: int) -> void:
 	if dead:
 		return
 	
 	health -= amount
-	if hurt_sound:
+	
+	# Hurt visual reaction (brief scale offset)
+	var visuals := get_node_or_null("Visuals") as Node3D
+	if visuals:
+		var tween := create_tween()
+		tween.tween_property(visuals, "scale", Vector3(0.9, 1.1, 0.9), 0.05)
+		tween.tween_property(visuals, "scale", Vector3(1.0, 1.0, 1.0), 0.05)
+	
+	# Trigger sound
+	if hurt_sound and health > 0:
 		hurt_sound.play()
-	
-	# Visual hit reaction flash/squash
-	var tween = create_tween()
-	tween.tween_property($Visuals, "scale", Vector3(0.9, 1.1, 0.9), 0.05)
-	tween.tween_property($Visuals, "scale", Vector3(1.0, 1.0, 1.0), 0.05)
-	
-	if health <= 0:
-		die()
+		
+	if health <= 0 and state_machine:
+		state_machine.transition_to("die")
 
-func die():
-	dead = true
-	collision_layer = 0
-	collision_mask = 0
-	
-	if hurt_sound:
-		hurt_sound.pitch_scale = 0.7
-		hurt_sound.play()
-	
-	if player and player.has_method("add_score"):
-		player.add_score(10)
-	
-	# Death animation: squash flat and sink into ground
-	var tween = create_tween()
-	tween.set_parallel(true)
-	tween.tween_property($Visuals, "scale", Vector3(1.5, 0.05, 1.5), 0.2)
-	tween.tween_property($Visuals, "position", Vector3(0, 0.05, 0), 0.2)
-	await tween.finished
-	
-	# Wait 1.5 seconds, then free the memory
-	await get_tree().create_timer(1.5).timeout
-	queue_free()
+func spawn_drop() -> void:
+	# 30% chance to drop item
+	if randf() <= 0.3:
+		if health_pickup_scene:
+			var pickup := health_pickup_scene.instantiate() as Area3D
+			
+			# Configure drop location
+			pickup.global_position = global_position + Vector3(0, 0.5, 0)
+			
+			# Decide pickup type randomly
+			# 0 = Health, 1 = Ammo
+			var p_type = randi() % 2
+			pickup.set("pickup_type", p_type)
+			
+			# Spawn in parent level map
+			get_parent().add_child(pickup)
