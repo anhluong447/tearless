@@ -55,8 +55,8 @@ func _process(delta: float) -> void:
 				# Trigger Phase 4 (Extraction Pad Active)
 				quest_phase = 4
 				player.show_wave_alert("EXTRACTION LZ ACTIVE! GET TO THE LZ!")
-				# Spawn extraction zone at plaza center
-				spawn_extraction_pad(Vector3(0.0, 0.05, 0.0))
+				# Spawn extraction zone at West Stairwell Lobby
+				spawn_extraction_pad(Vector3(-15.5, 0.05, 0.0))
 
 func setup_bgm() -> void:
 	bgm_player = AudioStreamPlayer.new()
@@ -104,12 +104,12 @@ func start_battery_quest_phase() -> void:
 	if player:
 		player.show_wave_alert("OBJECTIVE: Collect 2 Batteries to Repair Radio!")
 		
-	# Spawn 2 batteries on opposite sidewalks
-	spawn_battery(Vector3(22.0, 0.5, 22.0))
-	spawn_battery(Vector3(-22.0, 0.5, -22.0))
+	# Spawn 2 batteries inside Room 101 and Room 104
+	spawn_battery(Vector3(-11.0, 0.5, -5.5))
+	spawn_battery(Vector3(11.0, 0.5, 5.5))
 	
-	# Spawn Radio Transmitter at plaza center
-	spawn_radio(Vector3(2.0, 0.5, -2.0))
+	# Spawn Radio Transmitter on the Lobby reception desk
+	spawn_radio(Vector3(0.0, 1.0, -2.5))
 
 func collect_battery() -> void:
 	batteries_collected += 1
@@ -350,10 +350,10 @@ func spawn_barrels() -> void:
 		return
 		
 	var barrel_positions := [
-		Vector3(-10.0, 0.0, -10.0),
-		Vector3(12.0, 0.0, 8.0),
-		Vector3(-8.0, 0.0, 15.0),
-		Vector3(15.0, 0.0, -12.0)
+		Vector3(-4.0, 0.0, 0.0),
+		Vector3(4.0, 0.0, 0.0),
+		Vector3(-7.0, 0.0, -4.5),
+		Vector3(7.0, 0.0, 4.5)
 	]
 	
 	for pos in barrel_positions:

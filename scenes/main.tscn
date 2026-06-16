@@ -1,288 +1,350 @@
-[gd_scene format=3 uid="uid://main12345"]
+[gd_scene load_steps=18 format=3 uid="uid://main12345"]
 
-[ext_resource type="Script" uid="uid://drghabpo4kgf3" path="res://scripts/main.gd" id="1_main_script"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main_script"]
 [ext_resource type="PackedScene" uid="uid://c1abcdefgh123" path="res://scenes/player.tscn" id="2_player_scene"]
-[ext_resource type="Script" uid="uid://cawfc6h634dbu" path="res://scripts/spawner.gd" id="3_spawner_script"]
+[ext_resource type="Script" path="res://scripts/spawner.gd" id="3_spawner_script"]
 [ext_resource type="PackedScene" uid="uid://shop1234567" path="res://scenes/shop_terminal.tscn" id="4_shop_terminal"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
-sky_top_color = Color(0.38, 0.55, 0.85, 1)
-sky_horizon_color = Color(0.7, 0.8, 0.9, 1)
-ground_bottom_color = Color(0.2, 0.2, 0.25, 1)
-ground_horizon_color = Color(0.7, 0.8, 0.9, 1)
-
-[sub_resource type="Sky" id="Sky_1"]
-sky_material = SubResource("ProceduralSkyMaterial_1")
-
 [sub_resource type="Environment" id="Environment_1"]
-background_mode = 2
-sky = SubResource("Sky_1")
-ambient_light_source = 3
-ambient_light_color = Color(0.65, 0.65, 0.7, 1)
-ambient_light_sky_contribution = 0.5
+background_mode = 1
+background_color = Color(0.015, 0.015, 0.02, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.03, 0.03, 0.04, 1)
 tonemap_mode = 2
 glow_enabled = true
-glow_intensity = 0.4
+glow_intensity = 0.8
+glow_bloom = 0.2
+fog_enabled = true
+fog_light_color = Color(0.04, 0.05, 0.07, 1)
+fog_density = 0.08
+fog_sky_affect = 0.0
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_1"]
 
-[sub_resource type="StandardMaterial3D" id="Material_Asphalt"]
-albedo_color = Color(0.15, 0.15, 0.18, 1)
+[sub_resource type="StandardMaterial3D" id="Material_Carpet"]
+albedo_color = Color(0.24, 0.06, 0.06, 1)
+roughness = 0.95
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="Material_Wallpaper"]
+albedo_color = Color(0.42, 0.40, 0.32, 1)
+roughness = 0.85
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="Material_Ceiling"]
+albedo_color = Color(0.12, 0.12, 0.13, 1)
 roughness = 0.9
 uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="Material_ConcreteBuilding"]
-albedo_color = Color(0.35, 0.35, 0.38, 1)
+[sub_resource type="StandardMaterial3D" id="Material_Wood"]
+albedo_color = Color(0.22, 0.14, 0.09, 1)
+roughness = 0.75
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="Material_GoldMetal"]
+albedo_color = Color(0.55, 0.45, 0.18, 1)
+metallic = 0.85
+roughness = 0.3
+
+[sub_resource type="StandardMaterial3D" id="Material_Debris"]
+albedo_color = Color(0.16, 0.11, 0.07, 1)
+roughness = 0.9
+uv1_triplanar = true
+
+[sub_resource type="StandardMaterial3D" id="Material_BedSheet"]
+albedo_color = Color(0.75, 0.72, 0.68, 1)
 roughness = 0.8
-uv1_triplanar = true
 
-[sub_resource type="StandardMaterial3D" id="Material_Sidewalk"]
-albedo_color = Color(0.45, 0.45, 0.45, 1)
-roughness = 0.7
-uv1_triplanar = true
-
-[sub_resource type="StandardMaterial3D" id="Material_BrickBuilding"]
-albedo_color = Color(0.45, 0.2, 0.15, 1)
-roughness = 0.8
-uv1_triplanar = true
-
-[sub_resource type="StandardMaterial3D" id="Material_GlassBuilding"]
-albedo_color = Color(0.1, 0.4, 0.5, 1)
-metallic = 0.9
-roughness = 0.15
-uv1_triplanar = true
-
-[sub_resource type="StandardMaterial3D" id="Material_StreetBarrier"]
-albedo_color = Color(0.7, 0.15, 0.15, 1)
-roughness = 0.6
-uv1_triplanar = true
-
-[sub_resource type="StandardMaterial3D" id="Material_LampWarm"]
-albedo_color = Color(1, 0.9, 0.5, 1)
+[sub_resource type="StandardMaterial3D" id="Material_TVGlow"]
+albedo_color = Color(0.2, 0.4, 0.8, 1)
 emission_enabled = true
-emission = Color(1, 0.9, 0.5, 1)
+emission = Color(0.1, 0.4, 0.9, 1)
 emission_energy_multiplier = 4.0
 
-[node name="Main" type="Node3D" unique_id=1959599322]
+[sub_resource type="StandardMaterial3D" id="Material_EmergencySign"]
+albedo_color = Color(0.9, 0.1, 0.1, 1)
+emission_enabled = true
+emission = Color(0.9, 0.05, 0.05, 1)
+emission_energy_multiplier = 5.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_LightTube"]
+size = Vector3(1.2, 0.08, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="Material_LightTube"]
+albedo_color = Color(0.95, 0.95, 1.0, 1)
+emission_enabled = true
+emission = Color(0.9, 0.9, 1.0, 1)
+emission_energy_multiplier = 3.0
+
+[node name="Main" type="Node3D"]
 script = ExtResource("1_main_script")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=625901218]
-transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 10, 0)
-light_color = Color(1, 0.95, 0.85, 1)
-light_energy = 1.6
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.5, -0.612372, 0.612372, 0, 0.707107, 0.707107, -0.866025, -0.353553, 0.353553, 0, 10, 0)
+light_color = Color(0.4, 0.5, 0.75, 1)
+light_energy = 0.15
 shadow_enabled = true
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=515878439]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1")
 
-[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=939945896]
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_1")
 
-[node name="Floor" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1233430189]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+[node name="HotelFloor" type="CSGCombiner3D" parent="NavigationRegion3D"]
 use_collision = true
-size = Vector3(60, 1, 60)
-material = SubResource("Material_Asphalt")
 
-[node name="WallNorth" type="CSGBox3D" parent="NavigationRegion3D" unique_id=825949034]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -30.5)
-use_collision = true
-size = Vector3(60, 20, 1)
-material = SubResource("Material_ConcreteBuilding")
+[node name="FloorSlab" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+size = Vector3(34, 0.1, 16)
+material = SubResource("Material_Carpet")
 
-[node name="WallSouth" type="CSGBox3D" parent="NavigationRegion3D" unique_id=260112478]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 30.5)
-use_collision = true
-size = Vector3(60, 20, 1)
-material = SubResource("Material_ConcreteBuilding")
+[node name="CeilingSlab" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.05, 0)
+size = Vector3(34, 0.1, 16)
+material = SubResource("Material_Ceiling")
 
-[node name="WallWest" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1802344409]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30.5, 10, 0)
-use_collision = true
-size = Vector3(1, 20, 60)
-material = SubResource("Material_ConcreteBuilding")
+[node name="WallNorth" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -8.1)
+size = Vector3(34, 3, 0.2)
+material = SubResource("Material_Wallpaper")
 
-[node name="WallEast" type="CSGBox3D" parent="NavigationRegion3D" unique_id=2135057804]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 10, 0)
-use_collision = true
-size = Vector3(1, 20, 60)
-material = SubResource("Material_ConcreteBuilding")
+[node name="WallSouth" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 8.1)
+size = Vector3(34, 3, 0.2)
+material = SubResource("Material_Wallpaper")
 
-[node name="NW_Sidewalk" type="CSGBox3D" parent="NavigationRegion3D" unique_id=681152093]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 0.1, -16)
-use_collision = true
-size = Vector3(16, 0.2, 16)
-material = SubResource("Material_Sidewalk")
+[node name="WallWest" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.1, 1.5, 0)
+size = Vector3(0.2, 3, 16.4)
+material = SubResource("Material_Wallpaper")
 
-[node name="NW_Building" type="CSGBox3D" parent="NavigationRegion3D" unique_id=233497771]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 10, -16)
-use_collision = true
-size = Vector3(12, 20, 12)
-material = SubResource("Material_BrickBuilding")
+[node name="WallEast" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.1, 1.5, 0)
+size = Vector3(0.2, 3, 16.4)
+material = SubResource("Material_Wallpaper")
 
-[node name="NE_Sidewalk" type="CSGBox3D" parent="NavigationRegion3D" unique_id=2075385837]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.1, -16)
-use_collision = true
-size = Vector3(16, 0.2, 16)
-material = SubResource("Material_Sidewalk")
+[node name="CorridorNorth_W1" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.25, 1.5, -1.2)
+size = Vector3(5.5, 3, 0.2)
+material = SubResource("Material_Wallpaper")
 
-[node name="NE_Building" type="CSGBox3D" parent="NavigationRegion3D" unique_id=797023474]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 12, -16)
-use_collision = true
-size = Vector3(12, 24, 12)
-material = SubResource("Material_GlassBuilding")
+[node name="CorridorNorth_W2" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.75, 1.5, -1.2)
+size = Vector3(5.5, 3, 0.2)
+material = SubResource("Material_Wallpaper")
 
-[node name="SW_Sidewalk" type="CSGBox3D" parent="NavigationRegion3D" unique_id=792819221]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 0.1, 16)
-use_collision = true
-size = Vector3(16, 0.2, 16)
-material = SubResource("Material_Sidewalk")
+[node name="CorridorNorth_E1" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, 1.5, -1.2)
+size = Vector3(5.5, 3, 0.2)
+material = SubResource("Material_Wallpaper")
 
-[node name="SW_Building" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1547541461]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 8, 16)
-use_collision = true
-size = Vector3(12, 16, 12)
-material = SubResource("Material_ConcreteBuilding")
+[node name="CorridorNorth_E2" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 1.5, -1.2)
+size = Vector3(5.5, 3, 0.2)
+material = SubResource("Material_Wallpaper")
 
-[node name="SE_Sidewalk" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1460660266]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.1, 16)
-use_collision = true
-size = Vector3(16, 0.2, 16)
-material = SubResource("Material_Sidewalk")
+[node name="CorridorSouth_W1" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.25, 1.5, 1.2)
+size = Vector3(5.5, 3, 0.2)
+material = SubResource("Material_Wallpaper")
 
-[node name="SE_Building" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1749647206]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 15, 16)
-use_collision = true
-size = Vector3(12, 30, 12)
-material = SubResource("Material_GlassBuilding")
+[node name="CorridorSouth_W2" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.75, 1.5, 1.2)
+size = Vector3(5.5, 3, 0.2)
+material = SubResource("Material_Wallpaper")
 
-[node name="CenterPlaza" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1314832461]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
-use_collision = true
-size = Vector3(8, 0.2, 8)
-material = SubResource("Material_Sidewalk")
+[node name="CorridorSouth_E1" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, 1.5, 1.2)
+size = Vector3(5.5, 3, 0.2)
+material = SubResource("Material_Wallpaper")
 
-[node name="CenterStatueBase" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1240446348]
+[node name="CorridorSouth_E2" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 1.5, 1.2)
+size = Vector3(5.5, 3, 0.2)
+material = SubResource("Material_Wallpaper")
+
+[node name="Partition_N" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -4.6)
+size = Vector3(0.2, 3, 6.8)
+material = SubResource("Material_Wallpaper")
+
+[node name="Partition_S" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 4.6)
+size = Vector3(0.2, 3, 6.8)
+material = SubResource("Material_Wallpaper")
+
+[node name="Partition_W_End" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 1.5, 0)
+size = Vector3(0.2, 3, 16)
+material = SubResource("Material_Wallpaper")
+
+[node name="Partition_E_End" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.5, 0)
+size = Vector3(0.2, 3, 16)
+material = SubResource("Material_Wallpaper")
+
+[node name="Elevator1" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.9, 1.1, -1.2)
+size = Vector3(0.3, 2.2, 1.4)
+material = SubResource("Material_GoldMetal")
+
+[node name="Elevator2" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.9, 1.1, 1.2)
+size = Vector3(0.3, 2.2, 1.4)
+material = SubResource("Material_GoldMetal")
+
+[node name="PlazaDesk" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -2.5)
+size = Vector3(3, 1, 0.8)
+material = SubResource("Material_Wood")
+
+[node name="BarricadePlank1" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(0.965926, -0.258819, 0, 0.258819, 0.965926, 0, 0, 0, 1, 15.6, 1.2, -0.8)
+size = Vector3(0.1, 0.3, 2.2)
+material = SubResource("Material_Debris")
+
+[node name="BarricadePlank2" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0, 0, 1, 15.6, 1.0, 0.8)
+size = Vector3(0.1, 0.3, 2.2)
+material = SubResource("Material_Debris")
+
+[node name="BarricadeChair" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(0.866025, 0.5, 0, -0.5, 0.866025, 0, 0, 0, 1, -15.5, 0.4, 0)
+size = Vector3(0.8, 0.8, 0.8)
+material = SubResource("Material_Debris")
+
+[node name="Bed101" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 0.3, -5.5)
+size = Vector3(2.2, 0.6, 1.8)
+material = SubResource("Material_Wood")
+
+[node name="Bed101Sheet" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor/Bed101"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.35, 0)
+size = Vector3(2.0, 0.1, 1.7)
+material = SubResource("Material_BedSheet")
+
+[node name="Bed102" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0.3, -5.5)
+size = Vector3(2.2, 0.6, 1.8)
+material = SubResource("Material_Wood")
+
+[node name="Bed102Sheet" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor/Bed102"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.35, 0)
+size = Vector3(2.0, 0.1, 1.7)
+material = SubResource("Material_BedSheet")
+
+[node name="Bed103" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 0.3, 5.5)
+size = Vector3(2.2, 0.6, 1.8)
+material = SubResource("Material_Wood")
+
+[node name="Bed103Sheet" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor/Bed103"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.35, 0)
+size = Vector3(2.0, 0.1, 1.7)
+material = SubResource("Material_BedSheet")
+
+[node name="Bed104" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0.3, 5.5)
+size = Vector3(2.2, 0.6, 1.8)
+material = SubResource("Material_Wood")
+
+[node name="Bed104Sheet" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor/Bed104"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.35, 0)
+size = Vector3(2.0, 0.1, 1.7)
+material = SubResource("Material_BedSheet")
+
+[node name="TVStand" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0.4, -2.0)
+size = Vector3(1.2, 0.8, 0.4)
+material = SubResource("Material_Wood")
+
+[node name="TVBox" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor/TVStand"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
-use_collision = true
-size = Vector3(2, 0.8, 2)
-material = SubResource("Material_ConcreteBuilding")
+size = Vector3(1.0, 0.6, 0.15)
+material = SubResource("Material_TVGlow")
 
-[node name="CenterColumn" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1233516408]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
-use_collision = true
-size = Vector3(1, 4, 1)
-material = SubResource("Material_BrickBuilding")
+[node name="ExitSign" type="CSGBox3D" parent="NavigationRegion3D/HotelFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.9, 2.5, 0)
+size = Vector3(0.1, 0.3, 0.6)
+material = SubResource("Material_EmergencySign")
 
-[node name="Barrier1" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1834807351]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.5, -5)
-use_collision = true
-size = Vector3(2, 1, 0.6)
-material = SubResource("Material_StreetBarrier")
+[node name="CorridorLightTube1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 2.9, 0)
+mesh = SubResource("BoxMesh_LightTube")
+surface_material_override/0 = SubResource("Material_LightTube")
 
-[node name="Barrier2" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1474650598]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, -5)
-use_collision = true
-size = Vector3(2, 1, 0.6)
-material = SubResource("Material_StreetBarrier")
+[node name="CorridorOmni1" type="OmniLight3D" parent="CorridorLightTube1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+light_color = Color(0.85, 0.9, 1, 1)
+light_energy = 1.2
+omni_range = 8.0
+shadow_enabled = true
 
-[node name="Barrier3" type="CSGBox3D" parent="NavigationRegion3D" unique_id=19120831]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.5, 5)
-use_collision = true
-size = Vector3(2, 1, 0.6)
-material = SubResource("Material_StreetBarrier")
+[node name="CorridorLightTube2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2.9, 0)
+mesh = SubResource("BoxMesh_LightTube")
+surface_material_override/0 = SubResource("Material_LightTube")
 
-[node name="Barrier4" type="CSGBox3D" parent="NavigationRegion3D" unique_id=624764341]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, 5)
-use_collision = true
-size = Vector3(2, 1, 0.6)
-material = SubResource("Material_StreetBarrier")
+[node name="CorridorOmni2" type="OmniLight3D" parent="CorridorLightTube2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+light_color = Color(0.85, 0.9, 1, 1)
+light_energy = 0.8
+omni_range = 8.0
+shadow_enabled = true
 
-[node name="Lamp1_Pole" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1636510930]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 2, -7)
-use_collision = true
-size = Vector3(0.2, 4, 0.2)
-material = SubResource("Material_ConcreteBuilding")
+[node name="LobbyLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0)
+light_color = Color(1.0, 0.85, 0.6, 1)
+light_energy = 2.0
+omni_range = 10.0
+shadow_enabled = true
 
-[node name="Lamp1_Head" type="CSGBox3D" parent="NavigationRegion3D/Lamp1_Pole" unique_id=1872526058]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
-size = Vector3(0.5, 0.2, 0.5)
-material = SubResource("Material_LampWarm")
+[node name="EmergencyLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, 2.3, 0)
+light_color = Color(1, 0.05, 0.05, 1)
+light_energy = 2.5
+omni_range = 7.0
+shadow_enabled = true
 
-[node name="Lamp1_Light" type="SpotLight3D" parent="NavigationRegion3D/Lamp1_Pole" unique_id=1618530255]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2, 0)
-light_color = Color(1, 0.9, 0.6, 1)
-light_energy = 4.0
-spot_range = 10.0
+[node name="TVLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 1.0, -2.5)
+light_color = Color(0.1, 0.5, 1, 1)
+light_energy = 1.8
+omni_range = 5.0
+shadow_enabled = true
 
-[node name="Lamp2_Pole" type="CSGBox3D" parent="NavigationRegion3D" unique_id=599828901]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 2, -7)
-use_collision = true
-size = Vector3(0.2, 4, 0.2)
-material = SubResource("Material_ConcreteBuilding")
+[node name="Room101Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 2.3, -5.5)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.0
+omni_range = 6.0
+shadow_enabled = true
 
-[node name="Lamp2_Head" type="CSGBox3D" parent="NavigationRegion3D/Lamp2_Pole" unique_id=476186860]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
-size = Vector3(0.5, 0.2, 0.5)
-material = SubResource("Material_LampWarm")
+[node name="Room103Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 2.3, 5.5)
+light_color = Color(1, 0.9, 0.7, 1)
+light_energy = 1.0
+omni_range = 6.0
+shadow_enabled = true
 
-[node name="Lamp2_Light" type="SpotLight3D" parent="NavigationRegion3D/Lamp2_Pole" unique_id=1710337525]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2, 0)
-light_color = Color(1, 0.9, 0.6, 1)
-light_energy = 4.0
-spot_range = 10.0
+[node name="Player" parent="." instance=ExtResource("2_player_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
 
-[node name="Lamp3_Pole" type="CSGBox3D" parent="NavigationRegion3D" unique_id=925676020]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 2, 7)
-use_collision = true
-size = Vector3(0.2, 4, 0.2)
-material = SubResource("Material_ConcreteBuilding")
+[node name="ShopTerminal" parent="." instance=ExtResource("4_shop_terminal")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.8)
 
-[node name="Lamp3_Head" type="CSGBox3D" parent="NavigationRegion3D/Lamp3_Pole" unique_id=961935792]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
-size = Vector3(0.5, 0.2, 0.5)
-material = SubResource("Material_LampWarm")
-
-[node name="Lamp3_Light" type="SpotLight3D" parent="NavigationRegion3D/Lamp3_Pole" unique_id=1685089046]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2, 0)
-light_color = Color(1, 0.9, 0.6, 1)
-light_energy = 4.0
-spot_range = 10.0
-
-[node name="Lamp4_Pole" type="CSGBox3D" parent="NavigationRegion3D" unique_id=1956993516]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 2, 7)
-use_collision = true
-size = Vector3(0.2, 4, 0.2)
-material = SubResource("Material_ConcreteBuilding")
-
-[node name="Lamp4_Head" type="CSGBox3D" parent="NavigationRegion3D/Lamp4_Pole" unique_id=461266425]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
-size = Vector3(0.5, 0.2, 0.5)
-material = SubResource("Material_LampWarm")
-
-[node name="Lamp4_Light" type="SpotLight3D" parent="NavigationRegion3D/Lamp4_Pole" unique_id=629523064]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2, 0)
-light_color = Color(1, 0.9, 0.6, 1)
-light_energy = 4.0
-spot_range = 10.0
-
-[node name="Player" parent="." unique_id=964421572 instance=ExtResource("2_player_scene")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 25)
-
-[node name="ShopTerminal" parent="." unique_id=455208866 instance=ExtResource("4_shop_terminal")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 2)
-
-[node name="Spawner" type="Node3D" parent="." unique_id=1003055156]
+[node name="Spawner" type="Node3D" parent="."]
 script = ExtResource("3_spawner_script")
 
-[node name="SpawnPoint1" type="Marker3D" parent="Spawner" unique_id=2010906931]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 0.5, -26)
+[node name="SpawnPoint1" type="Marker3D" parent="Spawner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 0.5, -5)
 
-[node name="SpawnPoint2" type="Marker3D" parent="Spawner" unique_id=1590108690]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0.5, -26)
+[node name="SpawnPoint2" type="Marker3D" parent="Spawner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0.5, -5)
 
-[node name="SpawnPoint3" type="Marker3D" parent="Spawner" unique_id=293236871]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 0.5, 26)
+[node name="SpawnPoint3" type="Marker3D" parent="Spawner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 0.5, 5)
 
-[node name="SpawnPoint4" type="Marker3D" parent="Spawner" unique_id=1058456659]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0.5, 26)
+[node name="SpawnPoint4" type="Marker3D" parent="Spawner"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, 0.5, 0)
