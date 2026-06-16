@@ -14,8 +14,11 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var raycast: RayCast3D = $Head/Camera3D/RayCast3D
+@onready var flashlight: SpotLight3D = $Head/Camera3D/Flashlight
 @onready var muzzle_flash: MeshInstance3D = $Head/Camera3D/Gun/MuzzleFlash
 @onready var gun_mesh: MeshInstance3D = $Head/Camera3D/Gun
+
+var flashlight_on: bool = false
 
 # Weapon resource database
 @export var weapons: Array[WeaponData] = []
@@ -152,11 +155,15 @@ func update_weapon_visuals() -> void:
 		gun_mesh.material_override = mat
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Handle Molotov quick throw
+	# Handle key presses
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_G:
 			if health > 0 and molotovs_carried > 0:
 				throw_molotov()
+		elif event.keycode == KEY_F:
+			flashlight_on = not flashlight_on
+			if flashlight:
+				flashlight.visible = flashlight_on
 
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * sensitivity)
