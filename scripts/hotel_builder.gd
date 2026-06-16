@@ -34,25 +34,25 @@ func _ready() -> void:
 
 func create_materials() -> void:
 	mat_carpet = _mat(Color(0.18, 0.04, 0.04), 0.95)
-	_apply_texture(mat_carpet, "res://textures/carpet.png", 1.5)
+	_apply_texture(mat_carpet, "res://textures/carpet.jpg", 1.5)
 	
 	mat_corridor_carpet = _mat(Color(0.12, 0.08, 0.06), 0.92)
-	_apply_texture(mat_corridor_carpet, "res://textures/carpet.png", 1.5)
+	_apply_texture(mat_corridor_carpet, "res://textures/carpet.jpg", 1.5)
 	
 	mat_wall = _mat(Color(0.38, 0.35, 0.28), 0.85)
-	_apply_texture(mat_wall, "res://textures/wallpaper.png", 0.6)
+	_apply_texture(mat_wall, "res://textures/wallpaper.jpg", 0.6)
 	
 	mat_wall_accent = _mat(Color(0.28, 0.22, 0.16), 0.85)
-	_apply_texture(mat_wall_accent, "res://textures/wallpaper.png", 0.6)
+	_apply_texture(mat_wall_accent, "res://textures/wallpaper.jpg", 0.6)
 	
 	mat_ceiling = _mat(Color(0.1, 0.1, 0.11), 0.9)
-	_apply_texture(mat_ceiling, "res://textures/ceiling.png", 0.8)
+	_apply_texture(mat_ceiling, "res://textures/ceiling.jpg", 0.8)
 	
 	mat_wood = _mat(Color(0.22, 0.14, 0.08), 0.75)
-	_apply_texture(mat_wood, "res://textures/wood.png", 1.2)
+	_apply_texture(mat_wood, "res://textures/wood.jpg", 1.2)
 	
 	mat_wood_dark = _mat(Color(0.12, 0.07, 0.04), 0.8)
-	_apply_texture(mat_wood_dark, "res://textures/wood.png", 1.2)
+	_apply_texture(mat_wood_dark, "res://textures/wood.jpg", 1.2)
 	
 	mat_metal = _mat_metallic(Color(0.5, 0.5, 0.5), 0.7, 0.3)
 	mat_bed_sheet = _mat(Color(0.7, 0.68, 0.62), 0.8)
@@ -60,13 +60,13 @@ func create_materials() -> void:
 	mat_glass = _mat_metallic(Color(0.15, 0.35, 0.45), 0.85, 0.15)
 	
 	mat_debris = _mat(Color(0.14, 0.1, 0.06), 0.9)
-	_apply_texture(mat_debris, "res://textures/wood.png", 1.0)
+	_apply_texture(mat_debris, "res://textures/wood.jpg", 1.0)
 	
 	mat_door = _mat(Color(0.3, 0.2, 0.12), 0.7)
-	_apply_texture(mat_door, "res://textures/wood.png", 1.0)
+	_apply_texture(mat_door, "res://textures/wood.jpg", 1.0)
 	
 	mat_tile = _mat(Color(0.75, 0.73, 0.7), 0.5)
-	_apply_texture(mat_tile, "res://textures/tile.png", 1.2)
+	_apply_texture(mat_tile, "res://textures/tile.jpg", 1.2)
 	
 	mat_mirror = _mat_metallic(Color(0.8, 0.85, 0.9), 0.95, 0.05)
 	mat_elevator_door = _mat_metallic(Color(0.55, 0.48, 0.2), 0.85, 0.25)
