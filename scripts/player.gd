@@ -57,6 +57,11 @@ var damage_multiplier: float = 1.0
 @onready var wave_alert: Label = $HUD/Layout/WaveAlert
 @onready var game_over_screen: CenterContainer = $HUD/GameOverScreen
 @onready var crosshair: Control = $HUD/Crosshair
+@onready var objective_marker: PanelContainer = $HUD/Layout/ObjectiveMarker
+@onready var objective_marker_label: Label = $HUD/Layout/ObjectiveMarker/Margin/Label
+
+# Throwables inventory
+var molotovs_carried: int = 3
 
 # Sound players
 @onready var shoot_sound: AudioStreamPlayer = $ShootSound
@@ -147,6 +152,12 @@ func update_weapon_visuals() -> void:
 		gun_mesh.material_override = mat
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Handle Molotov quick throw
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_G:
+			if health > 0 and molotovs_carried > 0:
+				throw_molotov()
+
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * sensitivity)
 		head.rotate_x(-event.relative.y * sensitivity)
@@ -229,6 +240,7 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0.0, current_speed)
 
 	move_and_slide()
+	update_objective_marker()
 
 func select_weapon(idx: int) -> void:
 	if idx == current_weapon_idx or idx >= weapons.size() or is_reloading:
@@ -300,20 +312,34 @@ func fire_single_ray(spread_factor: float, damage_val: int) -> void:
 	query.exclude = [self.get_rid()]
 	
 	var result = space_state.intersect_ray(query)
+	var hit_point = end_point
+	
 	if not result.is_empty():
 		var collider = result.collider
 		var point = result.position
 		var normal = result.normal
+		hit_point = point
 		
+		# Check headshot
+		var is_head = false
+		if collider and collider.has_method("is_headshot"):
+			is_head = collider.is_headshot(point.y)
+			
 		var final_damage = int(damage_val * damage_multiplier)
-		
+		if is_head:
+			final_damage *= 2
+			
 		if collider and collider.has_method("take_damage"):
-			collider.take_damage(final_damage)
-			spawn_impact_particles(blood_particles, point, normal)
+			collider.take_damage(final_damage, is_head)
+			spawn_impact_particles(blood_particles, point, normal, is_head)
 		else:
 			spawn_impact_particles(spark_particles, point, normal)
+			
+	# Spawn visual bullet tracer
+	if muzzle_flash:
+		spawn_tracer(muzzle_flash.global_position, hit_point)
 
-func spawn_impact_particles(scene: PackedScene, point: Vector3, normal: Vector3) -> void:
+func spawn_impact_particles(scene: PackedScene, point: Vector3, normal: Vector3, is_critical: bool = false) -> void:
 	if not scene:
 		return
 	var inst = scene.instantiate() as CPUParticles3D
@@ -326,6 +352,10 @@ func spawn_impact_particles(scene: PackedScene, point: Vector3, normal: Vector3)
 		inst.look_at_from_position(point, point + Vector3.DOWN, Vector3.FORWARD)
 	else:
 		inst.look_at_from_position(point, point + normal, Vector3.UP)
+		
+	if is_critical:
+		inst.scale = Vector3(2.2, 2.2, 2.2)
+		inst.amount = 30
 		
 	get_parent().add_child(inst)
 
@@ -412,11 +442,11 @@ func update_hud() -> void:
 			var clip: int = weapon_clip_ammo.get(current_weapon.name, 0)
 			var reserve: int = ammo_reserves.get(current_weapon.name, 0)
 			if is_reloading:
-				ammo_label.text = "%s - Reloading..." % current_weapon.name
+				ammo_label.text = "%s - Reloading...\nMolotovs: %d" % [current_weapon.name, molotovs_carried]
 			else:
-				ammo_label.text = "%s - %d/%d" % [current_weapon.name, clip, reserve]
+				ammo_label.text = "%s - %d/%d\nMolotovs: %d" % [current_weapon.name, clip, reserve, molotovs_carried]
 		else:
-			ammo_label.text = "--/--"
+			ammo_label.text = "--/--\nMolotovs: %d" % molotovs_carried
 	if score_label:
 		score_label.text = "SCORE: %d" % score
 
@@ -443,3 +473,89 @@ func hide_wave_alert() -> void:
 	if wave_alert:
 		wave_alert.text = ""
 		wave_alert.hide()
+
+func spawn_tracer(start: Vector3, end: Vector3) -> void:
+	var tracer := MeshInstance3D.new()
+	var box_mesh := BoxMesh.new()
+	box_mesh.size = Vector3(0.015, 0.015, 1.0)
+	
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(1.0, 0.75, 0.1, 0.8)
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.75, 0.1, 1.0)
+	mat.emission_energy_multiplier = 4.0
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	
+	tracer.mesh = box_mesh
+	tracer.material_override = mat
+	
+	get_parent().add_child(tracer)
+	
+	var dir = end - start
+	var dist = dir.length()
+	tracer.position = start + dir * 0.5
+	tracer.scale.z = dist
+	
+	if dist > 0.01:
+		tracer.look_at(end, Vector3.UP)
+		
+	var tween = create_tween()
+	tween.tween_property(tracer, "scale:x", 0.0, 0.12)
+	tween.parallel().tween_property(tracer, "scale:y", 0.0, 0.12)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.12)
+	tween.tween_callback(tracer.queue_free)
+
+func throw_molotov() -> void:
+	var molotov_scene = load("res://scenes/molotov_projectile.tscn") as PackedScene
+	if molotov_scene:
+		molotovs_carried -= 1
+		update_hud()
+		
+		var molotov = molotov_scene.instantiate() as RigidBody3D
+		molotov.position = camera.global_position + (-camera.global_transform.basis.z * 0.5)
+		get_parent().add_child(molotov)
+		
+		var throw_dir = -camera.global_transform.basis.z
+		throw_dir.y += 0.2
+		throw_dir = throw_dir.normalized()
+		
+		molotov.linear_velocity = throw_dir * 15.0
+
+func update_objective_marker() -> void:
+	if not objective_marker or not objective_marker_label:
+		return
+		
+	var main_node = get_parent()
+	if not main_node or not main_node.has_method("get_current_objective_targets"):
+		objective_marker.hide()
+		return
+		
+	var targets: Array = main_node.call("get_current_objective_targets")
+	if targets.is_empty():
+		objective_marker.hide()
+		return
+		
+	var closest_target: Vector3 = Vector3.ZERO
+	var min_dist: float = 999999.0
+	var label_text := ""
+	
+	for item in targets:
+		if is_instance_valid(item.node):
+			var dist = global_position.distance_to(item.node.global_position)
+			if dist < min_dist:
+				min_dist = dist
+				closest_target = item.node.global_position
+				label_text = item.label
+				
+	if min_dist > 99990.0:
+		objective_marker.hide()
+		return
+		
+	if camera.is_position_behind(closest_target):
+		objective_marker.hide()
+		return
+		
+	var screen_pos = camera.unproject_position(closest_target)
+	objective_marker.show()
+	objective_marker.position = screen_pos - objective_marker.size * 0.5
+	objective_marker_label.text = "%s\n[%dm]" % [label_text, int(min_dist)]

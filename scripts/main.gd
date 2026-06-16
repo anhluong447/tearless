@@ -26,6 +26,9 @@ func _ready() -> void:
 	# Setup background music
 	setup_bgm()
 	
+	# Spawn explosive barrels
+	spawn_barrels()
+	
 	# Wait a few frames for CSG shapes and physics to settle, then bake the navmesh
 	for i in range(5):
 		await get_tree().physics_frame
@@ -111,6 +114,7 @@ func start_battery_quest_phase() -> void:
 func collect_battery() -> void:
 	batteries_collected += 1
 	if player:
+		player.set("batteries_carried", player.get("batteries_carried") + 1)
 		player.show_wave_alert("Battery Collected! (%d/2)" % batteries_collected)
 		await get_tree().create_timer(2.0).timeout
 		if is_instance_valid(player) and quest_phase == 2:
@@ -177,6 +181,7 @@ func spawn_battery(pos: Vector3) -> void:
 	root_node.add_child(canvas)
 	
 	add_child(root_node)
+	root_node.add_to_group("batteries")
 
 func spawn_radio(pos: Vector3) -> void:
 	var root_node = Area3D.new()
@@ -236,6 +241,7 @@ func spawn_radio(pos: Vector3) -> void:
 	root_node.add_child(canvas)
 	
 	add_child(root_node)
+	root_node.add_to_group("radio")
 
 func spawn_extraction_pad(pos: Vector3) -> void:
 	var root_node = Area3D.new()
@@ -273,6 +279,7 @@ func spawn_extraction_pad(pos: Vector3) -> void:
 	root_node.add_child(canvas)
 	
 	add_child(root_node)
+	root_node.add_to_group("extraction_pad")
 
 func show_victory() -> void:
 	get_tree().paused = true
@@ -336,3 +343,39 @@ func show_victory() -> void:
 func _on_restart_pressed() -> void:
 	get_tree().paused = false
 	get_tree().reload_current_scene()
+
+func spawn_barrels() -> void:
+	var barrel_scene = load("res://scenes/explosive_barrel.tscn") as PackedScene
+	if not barrel_scene:
+		return
+		
+	var barrel_positions := [
+		Vector3(-10.0, 0.0, -10.0),
+		Vector3(12.0, 0.0, 8.0),
+		Vector3(-8.0, 0.0, 15.0),
+		Vector3(15.0, 0.0, -12.0)
+	]
+	
+	for pos in barrel_positions:
+		var barrel = barrel_scene.instantiate() as Node3D
+		add_child(barrel)
+		barrel.global_position = pos
+
+func get_current_objective_targets() -> Array:
+	var list = []
+	if quest_phase == 2:
+		var p = get_tree().get_first_node_in_group("player")
+		var batteries_carried = p.get("batteries_carried") if p else 0
+		if batteries_carried < 2:
+			for bat in get_tree().get_nodes_in_group("batteries"):
+				if is_instance_valid(bat):
+					list.append({"node": bat, "label": "◆ Battery"})
+		else:
+			for rad in get_tree().get_nodes_in_group("radio"):
+				if is_instance_valid(rad):
+					list.append({"node": rad, "label": "▲ Transmitter"})
+	elif quest_phase == 4:
+		for pad in get_tree().get_nodes_in_group("extraction_pad"):
+			if is_instance_valid(pad):
+				list.append({"node": pad, "label": "★ Escape LZ"})
+	return list

@@ -143,6 +143,32 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
+[node name="ObjectiveMarker" type="PanelContainer" parent="HUD/Layout"]
+visible = false
+layout_mode = 0
+offset_right = 110.0
+offset_bottom = 46.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_HUDPanel")
+
+[node name="Margin" type="MarginContainer" parent="HUD/Layout/ObjectiveMarker"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="Label" type="Label" parent="HUD/Layout/ObjectiveMarker/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 12
+text = "◆ Battery
+[10m]"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="TopHUD" type="HBoxContainer" parent="HUD/Layout"]
 layout_mode = 1
 anchors_preset = 10

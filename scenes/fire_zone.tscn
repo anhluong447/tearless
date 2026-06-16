@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://firezone123"]
+
+[ext_resource type="Script" path="res://scripts/fire_zone.gd" id="1_script"]
+
+[node name="FireZone" type="Area3D"]
+script = ExtResource("1_script")

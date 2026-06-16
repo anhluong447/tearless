@@ -22,6 +22,11 @@ var time_since_last_attack: float = ATTACK_COOLDOWN
 
 var player: CharacterBody3D = null
 
+# Persistent stagger and audio timers
+var stagger_timer: float = 0.0
+var moan_sound: AudioStreamPlayer3D = null
+var moan_timer: float = 0.0
+
 # Cached nodes
 @onready var nav_agent: NavigationAgent3D = $NavigationAgent3D
 @onready var hurt_sound: AudioStreamPlayer3D = $HurtSound
@@ -36,6 +41,14 @@ func _ready() -> void:
 		player = get_node_or_null("/root/Main/Player") as CharacterBody3D
 
 	configure_zombie_type()
+	
+	# Instantiate 3D growl audio player
+	moan_sound = AudioStreamPlayer3D.new()
+	moan_sound.stream = load("res://sound/splat.wav")
+	moan_sound.volume_db = -8.0
+	moan_sound.max_distance = 25.0
+	add_child(moan_sound)
+	moan_timer = randf_range(3.0, 10.0)
 
 	# Instantiate StateMachine programmatically
 	state_machine = StateMachine.new()
@@ -87,11 +100,40 @@ func configure_zombie_type() -> void:
 		body_mesh.material_override = mat
 	health = max_health
 
-func take_damage(amount: int) -> void:
+func _physics_process(delta: float) -> void:
+	if dead:
+		return
+		
+	# Update stagger timer
+	if stagger_timer > 0.0:
+		stagger_timer -= delta
+		
+	# Update ambient growls
+	moan_timer -= delta
+	if moan_timer <= 0.0:
+		moan_timer = randf_range(8.0, 16.0)
+		if moan_sound:
+			moan_sound.pitch_scale = randf_range(0.35, 0.55)
+			moan_sound.play()
+
+func is_headshot(hit_global_y: float) -> bool:
+	var relative_y = hit_global_y - global_position.y
+	# Standard height is 2.0. We scale the head threshold (1.35) by the node's scale.y
+	var threshold = 1.35 * scale.y
+	return relative_y >= threshold
+
+func apply_stagger(damage_val: int, is_head: bool) -> void:
+	if is_head:
+		stagger_timer = 0.6
+	elif damage_val >= 15:
+		stagger_timer = 0.35
+
+func take_damage(amount: int, is_head: bool = false) -> void:
 	if dead:
 		return
 	
 	health -= amount
+	apply_stagger(amount, is_head)
 	
 	# Hurt visual reaction (brief scale offset)
 	var visuals := get_node_or_null("Visuals") as Node3D
@@ -102,6 +144,7 @@ func take_damage(amount: int) -> void:
 	
 	# Trigger sound
 	if hurt_sound and health > 0:
+		hurt_sound.pitch_scale = randf_range(1.4, 1.6) if is_head else randf_range(0.9, 1.1)
 		hurt_sound.play()
 		
 	if health <= 0:
