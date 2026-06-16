@@ -17,7 +17,8 @@ func _ready() -> void:
 	# Create visual mesh (a small cylinder/bottle)
 	var mesh_inst = MeshInstance3D.new()
 	var cyl_mesh = CylinderMesh.new()
-	cyl_mesh.radius = 0.06
+	cyl_mesh.top_radius = 0.06
+	cyl_mesh.bottom_radius = 0.06
 	cyl_mesh.height = 0.25
 	mesh_inst.mesh = cyl_mesh
 	
