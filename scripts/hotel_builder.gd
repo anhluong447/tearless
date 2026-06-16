@@ -129,6 +129,7 @@ func build_corridor() -> void:
 func build_rooms_north() -> void:
 	var room_centers_x = [-26.0, -15.0, -4.0, 9.0, 22.0]
 	var room_width = 8.0
+	var lamp_mat = _mat_emissive(Color(1,0.9,0.6), Color(1,0.85,0.5), 3.0)
 	for i in range(room_centers_x.size()):
 		var cx = room_centers_x[i]
 		var cz = -8.0
@@ -136,27 +137,47 @@ func build_rooms_north() -> void:
 		# Room divider walls (between rooms)
 		if i < room_centers_x.size() - 1:
 			var wall_x = (room_centers_x[i] + room_centers_x[i + 1]) / 2.0
-			_box(self, rm_name + "_DivW", Vector3(wall_x, 1.75, cz), Vector3(0.15, 3.5, 13), mat_wall_accent)
+			_box(self, rm_name + "_DivW", Vector3(wall_x, 1.75, cz), Vector3(0.15, 3.5, 13.6), mat_wall_accent)
 		# Furniture: Bed
 		_box(self, rm_name + "_BedFrame", Vector3(cx - 1.5, 0.25, cz - 2.5), Vector3(2.4, 0.5, 2.0), mat_wood)
 		_box(self, rm_name + "_Sheet", Vector3(cx - 1.5, 0.55, cz - 2.5), Vector3(2.2, 0.08, 1.8), mat_bed_sheet, false)
 		_box(self, rm_name + "_Pillow", Vector3(cx - 1.5, 0.62, cz - 3.2), Vector3(1.2, 0.12, 0.4), mat_bed_pillow, false)
-		# Nightstand
-		_box(self, rm_name + "_Nightstand", Vector3(cx + 0.2, 0.3, cz - 3.2), Vector3(0.5, 0.6, 0.5), mat_wood_dark)
-		# Dresser
-		_box(self, rm_name + "_Dresser", Vector3(cx + 2.0, 0.45, cz - 4.0), Vector3(1.2, 0.9, 0.6), mat_wood)
-		# TV on dresser
+		# Headboard
+		_box(self, rm_name + "_Headboard", Vector3(cx - 1.5, 0.7, cz - 3.5), Vector3(2.3, 0.8, 0.1), mat_wood_dark, false)
+		# Nightstands (both sides)
+		_box(self, rm_name + "_NightstandL", Vector3(cx - 2.9, 0.3, cz - 3.2), Vector3(0.5, 0.6, 0.5), mat_wood_dark)
+		_box(self, rm_name + "_NightstandR", Vector3(cx - 0.1, 0.3, cz - 3.2), Vector3(0.5, 0.6, 0.5), mat_wood_dark)
+		# Bedside lamps
+		_box(self, rm_name + "_LampL", Vector3(cx - 2.9, 0.75, cz - 3.2), Vector3(0.15, 0.3, 0.15), lamp_mat, false)
+		_box(self, rm_name + "_LampR", Vector3(cx - 0.1, 0.75, cz - 3.2), Vector3(0.15, 0.3, 0.15), lamp_mat, false)
+		# Bedside light source
+		var bl = OmniLight3D.new()
+		bl.name = rm_name + "_BedLight"
+		bl.light_color = Color(1.0, 0.85, 0.6)
+		bl.light_energy = 1.5
+		bl.omni_range = 5.0
+		bl.position = Vector3(cx - 0.1, 1.0, cz - 3.2)
+		add_child(bl)
+		# Dresser + TV
+		_box(self, rm_name + "_Dresser", Vector3(cx + 2.0, 0.45, cz + 4.5), Vector3(1.4, 0.9, 0.6), mat_wood)
 		var tv_mat = _mat_emissive(Color(0.1, 0.1, 0.15), Color(0.05, 0.3, 0.8), 3.0)
-		_box(self, rm_name + "_TV", Vector3(cx + 2.0, 1.1, cz - 4.0), Vector3(0.8, 0.5, 0.1), tv_mat, false)
-		# Bathroom partition wall
-		_box(self, rm_name + "_BathWall", Vector3(cx + 2.8, 1.75, cz + 0.5), Vector3(0.12, 3.5, 3.5), mat_tile)
-		# Bathroom floor tile
-		_box(self, rm_name + "_BathFloor", Vector3(cx + 3.2, 0.01, cz + 0.5), Vector3(1.5, 0.02, 3.5), mat_tile, false)
-		# Mirror
-		_box(self, rm_name + "_Mirror", Vector3(cx + 3.85, 1.6, cz + 0.5), Vector3(0.04, 0.8, 0.5), mat_mirror, false)
-		# Desk/chair near window
-		_box(self, rm_name + "_Desk", Vector3(cx - 0.5, 0.38, cz + 1.5), Vector3(1.2, 0.76, 0.6), mat_wood_dark)
-		_box(self, rm_name + "_Chair", Vector3(cx - 0.5, 0.25, cz + 2.5), Vector3(0.5, 0.5, 0.5), mat_wood)
+		_box(self, rm_name + "_TV", Vector3(cx + 2.0, 1.1, cz + 4.5), Vector3(0.9, 0.55, 0.08), tv_mat, false)
+		# Bathroom partition
+		_box(self, rm_name + "_BathWall", Vector3(cx + 2.8, 1.75, cz - 0.5), Vector3(0.12, 3.5, 2.8), mat_tile)
+		_box(self, rm_name + "_BathFloor", Vector3(cx + 3.2, 0.01, cz - 1.0), Vector3(1.5, 0.02, 2.5), mat_tile, false)
+		# Sink counter
+		_box(self, rm_name + "_Sink", Vector3(cx + 3.5, 0.45, cz - 1.5), Vector3(0.8, 0.9, 0.5), mat_tile)
+		# Mirror above sink
+		_box(self, rm_name + "_Mirror", Vector3(cx + 3.9, 1.5, cz - 1.5), Vector3(0.04, 0.7, 0.5), mat_mirror, false)
+		# Desk + chair
+		_box(self, rm_name + "_Desk", Vector3(cx - 0.5, 0.38, cz + 2.0), Vector3(1.2, 0.76, 0.6), mat_wood_dark)
+		_box(self, rm_name + "_Chair", Vector3(cx - 0.5, 0.25, cz + 3.0), Vector3(0.5, 0.5, 0.5), mat_wood)
+		# Baseboard north wall
+		_box(self, rm_name + "_BaseN", Vector3(cx, 0.06, cz - 6.9), Vector3(room_width, 0.12, 0.08), mat_wood_dark, false)
+		# Door frame
+		_box(self, rm_name + "_DoorL", Vector3(cx - 0.55, 1.2, -1.55), Vector3(0.1, 2.4, 0.15), mat_door, false)
+		_box(self, rm_name + "_DoorR", Vector3(cx + 0.55, 1.2, -1.55), Vector3(0.1, 2.4, 0.15), mat_door, false)
+		_box(self, rm_name + "_DoorTop", Vector3(cx, 2.45, -1.55), Vector3(1.2, 0.1, 0.15), mat_door, false)
 
 # ── SOUTH ROOMS (5 rooms) ──
 func build_rooms_south() -> void:
@@ -247,82 +268,82 @@ func build_corridor_decor() -> void:
 
 # ── LIGHTING ──
 func build_lighting() -> void:
-	# Corridor lights — dim flickering fluorescents spaced every 10m
-	var corridor_light_x = [-25.0, -15.0, -5.0, 5.0, 15.0, 25.0]
-	for i in range(corridor_light_x.size()):
-		# Light tube mesh
+	# Corridor fluorescent lights every 6m (much denser)
+	var tube_mat = _mat_emissive(Color(0.95, 0.95, 1.0), Color(0.9, 0.9, 1.0), 3.0)
+	var cx_lights = [-28.0, -22.0, -16.0, -10.0, -4.0, 2.0, 8.0, 14.0, 20.0, 26.0]
+	for i in range(cx_lights.size()):
 		var tube = MeshInstance3D.new()
-		tube.name = "LightTube_%d" % i
+		tube.name = "Tube_%d" % i
 		var bm = BoxMesh.new()
 		bm.size = Vector3(1.4, 0.06, 0.06)
 		tube.mesh = bm
-		var tube_mat = _mat_emissive(Color(0.9, 0.9, 1.0), Color(0.85, 0.85, 1.0), 2.5)
 		tube.material_override = tube_mat
-		tube.position = Vector3(corridor_light_x[i], 3.4, 0)
+		tube.position = Vector3(cx_lights[i], 3.4, 0)
 		add_child(tube)
-		# Every other light is dimmer / broken
-		var energy = 1.5 if i % 2 == 0 else 0.4
+		var energy = 2.5 if i % 3 != 2 else 0.6  # 1 in 3 is flickering/dim
 		var omni = OmniLight3D.new()
-		omni.name = "CorridorLight_%d" % i
-		omni.light_color = Color(0.8, 0.85, 1.0)
+		omni.name = "CL_%d" % i
+		omni.light_color = Color(0.85, 0.88, 1.0)
 		omni.light_energy = energy
-		omni.omni_range = 9.0
+		omni.omni_range = 8.0
 		omni.shadow_enabled = true
-		omni.position = Vector3(corridor_light_x[i], 3.2, 0)
+		omni.position = Vector3(cx_lights[i], 3.2, 0)
 		add_child(omni)
-	
-	# Emergency red light at elevator lobby
-	var emergency = OmniLight3D.new()
-	emergency.name = "EmergencyRed"
-	emergency.light_color = Color(1, 0.03, 0.03)
-	emergency.light_energy = 3.0
-	emergency.omni_range = 8.0
-	emergency.shadow_enabled = true
-	emergency.position = Vector3(33, 2.8, 0)
-	add_child(emergency)
-	
-	# Emergency exit sign (emissive mesh)
-	var exit_sign_mat = _mat_emissive(Color(0.9, 0.05, 0.05), Color(0.9, 0.05, 0.05), 6.0)
-	_box(self, "ExitSign", Vector3(31, 2.8, 0), Vector3(0.6, 0.25, 0.06), exit_sign_mat, false)
-	
-	# Stairwell dim green emergency light
-	var stair_light = OmniLight3D.new()
-	stair_light.name = "StairLight"
-	stair_light.light_color = Color(0.1, 0.8, 0.15)
-	stair_light.light_energy = 1.5
-	stair_light.omni_range = 6.0
-	stair_light.shadow_enabled = true
-	stair_light.position = Vector3(-33, 2.8, 0)
-	add_child(stair_light)
-	
-	# Room lights — some rooms have warm glow, others are dark
-	var lit_rooms_n = [-26.0, -4.0, 22.0]
-	for x in lit_rooms_n:
+	# Emergency red at elevator
+	var em = OmniLight3D.new()
+	em.name = "EmRed"
+	em.light_color = Color(1, 0.03, 0.03)
+	em.light_energy = 3.5
+	em.omni_range = 9.0
+	em.shadow_enabled = true
+	em.position = Vector3(33, 2.8, 0)
+	add_child(em)
+	var esm = _mat_emissive(Color(0.9, 0.05, 0.05), Color(0.9, 0.05, 0.05), 6.0)
+	_box(self, "ExitSign", Vector3(31, 2.8, 0), Vector3(0.6, 0.25, 0.06), esm, false)
+	# Stairwell green
+	var sl = OmniLight3D.new()
+	sl.name = "StairGreen"
+	sl.light_color = Color(0.1, 0.8, 0.15)
+	sl.light_energy = 2.0
+	sl.omni_range = 7.0
+	sl.shadow_enabled = true
+	sl.position = Vector3(-33, 2.8, 0)
+	add_child(sl)
+	# ALL rooms get ceiling lights now
+	var all_rooms_n = [-26.0, -15.0, -4.0, 9.0, 22.0]
+	for x in all_rooms_n:
 		var rl = OmniLight3D.new()
-		rl.name = "RoomLightN_%d" % int(x)
-		rl.light_color = Color(1.0, 0.85, 0.6)
-		rl.light_energy = 0.8
-		rl.omni_range = 6.0
+		rl.name = "RLN_%d" % int(x)
+		rl.light_color = Color(1.0, 0.88, 0.65)
+		rl.light_energy = 1.8
+		rl.omni_range = 7.0
 		rl.shadow_enabled = true
 		rl.position = Vector3(x, 2.8, -8)
 		add_child(rl)
-	var lit_rooms_s = [-15.0, 9.0]
-	for x in lit_rooms_s:
+	var all_rooms_s = [-26.0, -15.0, -4.0, 9.0, 22.0]
+	for x in all_rooms_s:
 		var rl = OmniLight3D.new()
-		rl.name = "RoomLightS_%d" % int(x)
-		rl.light_color = Color(1.0, 0.85, 0.6)
-		rl.light_energy = 0.8
-		rl.omni_range = 6.0
+		rl.name = "RLS_%d" % int(x)
+		rl.light_color = Color(1.0, 0.88, 0.65)
+		rl.light_energy = 1.8
+		rl.omni_range = 7.0
 		rl.shadow_enabled = true
 		rl.position = Vector3(x, 2.8, 8)
 		add_child(rl)
-	
-	# Lobby warm chandelier
-	var lobby = OmniLight3D.new()
-	lobby.name = "LobbyLight"
-	lobby.light_color = Color(1.0, 0.8, 0.5)
-	lobby.light_energy = 2.5
-	lobby.omni_range = 12.0
-	lobby.shadow_enabled = true
-	lobby.position = Vector3(0, 3.0, -4)
-	add_child(lobby)
+	# Lobby chandelier
+	var lb = OmniLight3D.new()
+	lb.name = "LobbyMain"
+	lb.light_color = Color(1.0, 0.82, 0.55)
+	lb.light_energy = 3.5
+	lb.omni_range = 14.0
+	lb.shadow_enabled = true
+	lb.position = Vector3(0, 3.0, -4)
+	add_child(lb)
+	# Elevator lobby light
+	var elb = OmniLight3D.new()
+	elb.name = "ElevLobby"
+	elb.light_color = Color(0.9, 0.7, 0.5)
+	elb.light_energy = 2.0
+	elb.omni_range = 8.0
+	elb.position = Vector3(33, 2.8, -5)
+	add_child(elb)
